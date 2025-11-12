@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - SECRET_KEY=change-this-in-production
+      - DEFAULT_CHECK_INTERVAL=60
+      - DEFAULT_TIMEOUT=30
+    volumes:
+      - ./instance:/app/instance
+    restart: unless-stopped

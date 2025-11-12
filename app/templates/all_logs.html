@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}All Logs - App Health Monitor{% endblock %}
+
+{% block content %}
+<div class="logs-container">
+    <div class="header-section">
+        <h1>All Health Check Logs</h1>
+        <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+
+    {% if pagination.items %}
+        <div class="logs-table-container">
+            <table class="logs-table">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Endpoint</th>
+                        <th>Status</th>
+                        <th>Status Code</th>
+                        <th>Response Time</th>
+                        <th>Error Message</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for check, endpoint in pagination.items %}
+                        <tr class="log-row-{{ check.status }}">
+                            <td>{{ check.checked_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                            <td>
+                                <a href="{{ url_for('main.endpoint_logs', endpoint_id=endpoint.id) }}">
+                                    {{ endpoint.name }}
+                                </a>
+                            </td>
+                            <td>
+                                <span class="status-badge status-{{ check.status }}">
+                                    {{ check.status }}
+                                </span>
+                            </td>
+                            <td>{{ check.status_code or '-' }}</td>
+                            <td>{{ ("%.2f"|format(check.response_time) + ' ms') if check.response_time else '-' }}</td>
+                            <td class="error-cell">{{ check.error_message or '-' }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if pagination.pages > 1 %}
+            <div class="pagination">
+                {% if pagination.has_prev %}
+                    <a href="{{ url_for('main.all_logs', page=pagination.prev_num) }}" class="btn btn-sm btn-secondary">Previous</a>
+                {% endif %}
+                
+                <span class="page-info">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+                
+                {% if pagination.has_next %}
+                    <a href="{{ url_for('main.all_logs', page=pagination.next_num) }}" class="btn btn-sm btn-secondary">Next</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="empty-state">
+            <p>No health check logs available yet.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
