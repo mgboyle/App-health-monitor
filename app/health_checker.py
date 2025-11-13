@@ -7,6 +7,7 @@ import re
 import json
 from datetime import datetime
 from app.models import db, Endpoint, HealthCheck
+from app.cert_utils import CertificateManager
 from requests_kerberos import HTTPKerberosAuth, OPTIONAL
 
 
@@ -135,12 +136,30 @@ class HealthChecker:
             HealthCheck model instance
         """
         health_check = HealthCheck(endpoint_id=endpoint.id)
+        cert_manager = None
+        cert_path = None
+        key_path = None
         
         try:
             start_time = time.time()
             
             # Get authentication configuration
             auth_config = HealthChecker.get_auth_config(endpoint)
+            
+            # Handle mTLS certificate if enabled
+            if endpoint.mtls_enabled:
+                from flask import current_app
+                keyvault_url = current_app.config.get('AZURE_KEYVAULT_URL')
+                cert_manager = CertificateManager(keyvault_url=keyvault_url)
+                
+                try:
+                    cert_path, key_path = cert_manager.get_certificate(endpoint)
+                    auth_config['cert'] = (cert_path, key_path)
+                except Exception as e:
+                    health_check.status = 'failure'
+                    health_check.error_message = f'mTLS certificate error: {str(e)[:200]}'
+                    health_check.checked_at = datetime.utcnow()
+                    return health_check
             
             # Handle SOAP endpoints differently
             if endpoint.endpoint_type == 'SOAP' and endpoint.soap_payload:
@@ -200,6 +219,11 @@ class HealthChecker:
         except Exception as e:
             health_check.status = 'failure'
             health_check.error_message = f'Error: {str(e)[:200]}'
+        
+        finally:
+            # Clean up temporary certificate files if they were created from Key Vault
+            if cert_manager and cert_path and key_path:
+                CertificateManager.cleanup_temp_files(cert_path, key_path)
         
         health_check.checked_at = datetime.utcnow()
         return health_check

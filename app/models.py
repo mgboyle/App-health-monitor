@@ -29,9 +29,16 @@ class Endpoint(db.Model):
     expected_content = db.Column(db.Text, nullable=True)  # Expected content to validate
     
     # Authentication fields
-    auth_type = db.Column(db.String(20), nullable=True)  # None, Basic, Windows, Kerberos, OAuth
+    auth_type = db.Column(db.String(20), nullable=True)  # None, Basic, Windows, Kerberos, OAuth, mTLS
     auth_username = db.Column(db.String(200), nullable=True)  # For Basic auth
     auth_password = db.Column(db.String(200), nullable=True)  # For Basic auth (should be encrypted in production)
+    
+    # mTLS certificate fields
+    mtls_enabled = db.Column(db.Boolean, default=False)  # Enable mTLS authentication
+    mtls_cert_source = db.Column(db.String(20), nullable=True)  # 'keyvault' or 'file'
+    mtls_cert_path = db.Column(db.String(500), nullable=True)  # Local file path for cert (for testing)
+    mtls_key_path = db.Column(db.String(500), nullable=True)  # Local file path for private key (for testing)
+    mtls_keyvault_cert_name = db.Column(db.String(200), nullable=True)  # Azure Key Vault certificate name
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -56,6 +63,11 @@ class Endpoint(db.Model):
             'expected_content': self.expected_content,
             'auth_type': self.auth_type,
             'auth_username': self.auth_username,
+            'mtls_enabled': self.mtls_enabled,
+            'mtls_cert_source': self.mtls_cert_source,
+            'mtls_cert_path': self.mtls_cert_path,
+            'mtls_key_path': self.mtls_key_path,
+            'mtls_keyvault_cert_name': self.mtls_keyvault_cert_name,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }

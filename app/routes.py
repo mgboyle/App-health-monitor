@@ -95,6 +95,13 @@ def add_endpoint():
         auth_username = request.form.get('auth_username', '').strip() or None
         auth_password = request.form.get('auth_password', '').strip() or None
         
+        # mTLS fields
+        mtls_enabled = request.form.get('mtls_enabled') == 'on'
+        mtls_cert_source = request.form.get('mtls_cert_source', '').strip() or None
+        mtls_cert_path = request.form.get('mtls_cert_path', '').strip() or None
+        mtls_key_path = request.form.get('mtls_key_path', '').strip() or None
+        mtls_keyvault_cert_name = request.form.get('mtls_keyvault_cert_name', '').strip() or None
+        
         if not name or not url:
             flash('Name and URL are required', 'error')
             return render_template('add_endpoint.html')
@@ -113,7 +120,12 @@ def add_endpoint():
             expected_content=expected_content if validation_enabled else None,
             auth_type=auth_type,
             auth_username=auth_username if auth_type == 'Basic' else None,
-            auth_password=auth_password if auth_type == 'Basic' else None
+            auth_password=auth_password if auth_type == 'Basic' else None,
+            mtls_enabled=mtls_enabled,
+            mtls_cert_source=mtls_cert_source if mtls_enabled else None,
+            mtls_cert_path=mtls_cert_path if mtls_enabled and mtls_cert_source == 'file' else None,
+            mtls_key_path=mtls_key_path if mtls_enabled and mtls_cert_source == 'file' else None,
+            mtls_keyvault_cert_name=mtls_keyvault_cert_name if mtls_enabled and mtls_cert_source == 'keyvault' else None
         )
         
         db.session.add(endpoint)
@@ -153,6 +165,13 @@ def edit_endpoint(endpoint_id):
         auth_password = request.form.get('auth_password', '').strip()
         if auth_password:  # Only update password if provided
             endpoint.auth_password = auth_password
+        
+        # mTLS fields
+        endpoint.mtls_enabled = request.form.get('mtls_enabled') == 'on'
+        endpoint.mtls_cert_source = request.form.get('mtls_cert_source', '').strip() or None
+        endpoint.mtls_cert_path = request.form.get('mtls_cert_path', '').strip() or None
+        endpoint.mtls_key_path = request.form.get('mtls_key_path', '').strip() or None
+        endpoint.mtls_keyvault_cert_name = request.form.get('mtls_keyvault_cert_name', '').strip() or None
         
         endpoint.updated_at = datetime.utcnow()
         

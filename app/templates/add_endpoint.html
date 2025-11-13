@@ -128,6 +128,58 @@
             </div>
         </div>
 
+        <!-- mTLS Section -->
+        <div class="form-section">
+            <h3>Mutual TLS (mTLS) (Optional)</h3>
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="mtls_enabled" name="mtls_enabled" onchange="toggleMtlsFields()">
+                    Enable mTLS client certificate authentication
+                </label>
+                <small style="color: #666; display: block; margin-top: 0.25rem;">
+                    Use mTLS when the API requires a client certificate for authentication
+                </small>
+            </div>
+
+            <div id="mtlsFields" style="display: none;">
+                <div class="form-group">
+                    <label for="mtls_cert_source">Certificate Source</label>
+                    <select id="mtls_cert_source" name="mtls_cert_source" onchange="toggleMtlsSourceFields()">
+                        <option value="file">Local Files (for testing)</option>
+                        <option value="keyvault">Azure Key Vault (for production/AKS)</option>
+                    </select>
+                </div>
+
+                <div id="mtlsFileFields">
+                    <div class="form-group">
+                        <label for="mtls_cert_path">Certificate File Path</label>
+                        <input type="text" id="mtls_cert_path" name="mtls_cert_path" placeholder="/path/to/client-cert.pem">
+                        <small style="color: #666; display: block; margin-top: 0.25rem;">
+                            Path to PEM-encoded certificate file (e.g., /certs/client.crt)
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="mtls_key_path">Private Key File Path</label>
+                        <input type="text" id="mtls_key_path" name="mtls_key_path" placeholder="/path/to/client-key.pem">
+                        <small style="color: #666; display: block; margin-top: 0.25rem;">
+                            Path to PEM-encoded private key file (e.g., /certs/client.key)
+                        </small>
+                    </div>
+                </div>
+
+                <div id="mtlsKeyvaultFields" style="display: none;">
+                    <div class="form-group">
+                        <label for="mtls_keyvault_cert_name">Key Vault Certificate Name</label>
+                        <input type="text" id="mtls_keyvault_cert_name" name="mtls_keyvault_cert_name" placeholder="my-client-cert">
+                        <small style="color: #666; display: block; margin-top: 0.25rem;">
+                            Name of the certificate in Azure Key Vault (requires AZURE_KEYVAULT_URL to be configured)
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="form-group">
             <label class="checkbox-label">
                 <input type="checkbox" name="enabled" checked>
@@ -161,6 +213,21 @@ function toggleAuthFields() {
     
     // Only show username/password for Basic auth
     authFields.style.display = authType === 'basic' ? 'block' : 'none';
+}
+
+function toggleMtlsFields() {
+    const mtlsEnabled = document.getElementById('mtls_enabled').checked;
+    const mtlsFields = document.getElementById('mtlsFields');
+    mtlsFields.style.display = mtlsEnabled ? 'block' : 'none';
+}
+
+function toggleMtlsSourceFields() {
+    const certSource = document.getElementById('mtls_cert_source').value;
+    const fileFields = document.getElementById('mtlsFileFields');
+    const keyvaultFields = document.getElementById('mtlsKeyvaultFields');
+    
+    fileFields.style.display = certSource === 'file' ? 'block' : 'none';
+    keyvaultFields.style.display = certSource === 'keyvault' ? 'block' : 'none';
 }
 
 async function loadWsdlOperations() {
