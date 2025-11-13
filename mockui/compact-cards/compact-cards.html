@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compact Cards View - Mock UI</title>
+    <link rel="stylesheet" href="compact-cards.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <a href="/">Health Monitor</a>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/">Dashboard</a></li>
+                <li><a href="/logs">All Logs</a></li>
+                <li><a href="/endpoints/add">Add Endpoint</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <div class="container">
+            <div class="header-section">
+                <h1>Service Health Monitor</h1>
+                <a href="/endpoints/add" class="btn btn-primary">+ Add Endpoint</a>
+            </div>
+
+            <!-- Compact Cards Grid -->
+            <div class="endpoints-grid">
+                
+                <!-- Card 1: Healthy REST API -->
+                <div class="endpoint-card status-healthy">
+                    <div class="endpoint-header">
+                        <h3>Open-Meteo Weather API</h3>
+                        <span class="badge badge-rest">REST</span>
+                    </div>
+                    
+                    <div class="endpoint-url">
+                        https://api.open-meteo.com/v1/forecast...
+                    </div>
+                    
+                    <div class="status-bar">
+                        <span class="status-pill success">
+                            <span class="status-dot"></span>
+                            Healthy
+                        </span>
+                    </div>
+                    
+                    <div class="metrics-inline">
+                        <div class="metric-item">
+                            <span class="metric-icon">⚡</span>
+                            <span class="metric-value">156ms</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-icon">✓</span>
+                            <span class="metric-value">200</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-icon">🕐</span>
+                            <span class="metric-value">2m ago</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-actions">
+                        <button class="btn-icon">▶</button>
+                        <button class="btn-icon">📊</button>
+                        <button class="btn-icon">✎</button>
+                        <button class="btn-icon danger">✕</button>
+                    </div>
+                </div>
+
+                <!-- Card 2: Healthy SOAP -->
+                <div class="endpoint-card status-healthy">
+                    <div class="endpoint-header">
+                        <h3>CountryInfo - CapitalCity</h3>
+                        <span class="badge badge-soap">SOAP</span>
+                    </div>
+                    
+                    <div class="endpoint-url">
+                        webservices.oorsprong.org/...
+                    </div>
+                    
+                    <div class="status-bar">
+                        <span class="status-pill success">
+                            <span class="status-dot"></span>
+                            Healthy
+                        </span>
+                    </div>
+                    
+                    <div class="metrics-inline">
+                        <div class="metric-item">
+                            <span class="metric-icon">⚡</span>
+                            <span class="metric-value">596ms</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-icon">✓</span>
+                            <span class="metric-value">200</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-icon">🕐</span>
+                            <span class="metric-value">3m ago</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-actions">
+                        <button class="btn-icon">▶</button>
+                        <button class="btn-icon">📊</button>
+                        <button class="btn-icon">✎</button>
+                        <button class="btn-icon danger">✕</button>
+                    </div>
+                </div>
+
+                <!-- Card 3: Failed Service -->
+                <div class="endpoint-card status-failed">
+                    <div class="endpoint-header">
+                        <h3>Production API Gateway</h3>
+                        <span class="badge badge-rest">REST</span>
+                    </div>
+                    
+                    <div class="endpoint-url">
+                        api.production.example.com/health
+                    </div>
+                    
+                    <div class="status-bar">
+                        <span class="status-pill failure">
+                            <span class="status-dot"></span>
+                            Failed
+                        </span>
+                    </div>
+                    
+                    <div class="error-banner">
+                        <span class="error-icon">⚠</span>
+                        Service Unavailable - 503
+                    </div>
+                    
+                    <div class="metrics-inline">
+                        <div class="metric-item">
+                            <span class="metric-icon">⚡</span>
+                            <span class="metric-value">1245ms</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-icon">✗</span>
+                            <span class="metric-value">503</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-icon">🕐</span>
+                            <span class="metric-value">1m ago</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-actions">
+                        <button class="btn-icon">▶</button>
+                        <button class="btn-icon">📊</button>
+                        <button class="btn-icon">✎</button>
+                        <button class="btn-icon danger">✕</button>
+                    </div>
+                </div>
+
+                <!-- Card 4: Timeout -->
+                <div class="endpoint-card status-timeout">
+                    <div class="endpoint-header">
+                        <h3>Legacy SOAP Service</h3>
+                        <span class="badge badge-soap">SOAP</span>
+                    </div>
+                    
+                    <div class="endpoint-url">
+                        legacy.internal.corp/service.asmx
+                    </div>
+                    
+                    <div class="status-bar">
+                        <span class="status-pill timeout">
+                            <span class="status-dot"></span>
+                            Timeout
+                        </span>
+                    </div>
+                    
+                    <div class="error-banner warning">
+                        <span class="error-icon">⏱</span>
+                        Request timeout after 30s
+                    </div>
+                    
+                    <div class="metrics-inline">
+                        <div class="metric-item">
+                            <span class="metric-icon">⚡</span>
+                            <span class="metric-value">—</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-icon">⏱</span>
+                            <span class="metric-value">Timeout</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-icon">🕐</span>
+                            <span class="metric-value">5m ago</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-actions">
+                        <button class="btn-icon">▶</button>
+                        <button class="btn-icon">📊</button>
+                        <button class="btn-icon">✎</button>
+                        <button class="btn-icon danger">✕</button>
+                    </div>
+                </div>
+
+                <!-- Card 5: Another Healthy Service -->
+                <div class="endpoint-card status-healthy">
+                    <div class="endpoint-header">
+                        <h3>Payment Gateway Health</h3>
+                        <span class="badge badge-rest">REST</span>
+                    </div>
+                    
+                    <div class="endpoint-url">
+                        payments.stripe.com/v1/health
+                    </div>
+                    
+                    <div class="status-bar">
+                        <span class="status-pill success">
+                            <span class="status-dot"></span>
+                            Healthy
+                        </span>
+                    </div>
+                    
+                    <div class="metrics-inline">
+                        <div class="metric-item">
+                            <span class="metric-icon">⚡</span>
+                            <span class="metric-value">89ms</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-icon">✓</span>
+                            <span class="metric-value">200</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-icon">🕐</span>
+                            <span class="metric-value">1m ago</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-actions">
+                        <button class="btn-icon">▶</button>
+                        <button class="btn-icon">📊</button>
+                        <button class="btn-icon">✎</button>
+                        <button class="btn-icon danger">✕</button>
+                    </div>
+                </div>
+
+                <!-- Card 6: GraphQL Service -->
+                <div class="endpoint-card status-healthy">
+                    <div class="endpoint-header">
+                        <h3>GraphQL API</h3>
+                        <span class="badge badge-graphql">GraphQL</span>
+                    </div>
+                    
+                    <div class="endpoint-url">
+                        api.example.com/graphql
+                    </div>
+                    
+                    <div class="status-bar">
+                        <span class="status-pill success">
+                            <span class="status-dot"></span>
+                            Healthy
+                        </span>
+                    </div>
+                    
+                    <div class="metrics-inline">
+                        <div class="metric-item">
+                            <span class="metric-icon">⚡</span>
+                            <span class="metric-value">234ms</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-icon">✓</span>
+                            <span class="metric-value">200</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-icon">🕐</span>
+                            <span class="metric-value">4m ago</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-actions">
+                        <button class="btn-icon">▶</button>
+                        <button class="btn-icon">📊</button>
+                        <button class="btn-icon">✎</button>
+                        <button class="btn-icon danger">✕</button>
+                    </div>
+                </div>
+
+                <!-- Card 7: Database Health -->
+                <div class="endpoint-card status-healthy">
+                    <div class="endpoint-header">
+                        <h3>Database Connection</h3>
+                        <span class="badge badge-rest">REST</span>
+                    </div>
+                    
+                    <div class="endpoint-url">
+                        db.internal.corp/health
+                    </div>
+                    
+                    <div class="status-bar">
+                        <span class="status-pill success">
+                            <span class="status-dot"></span>
+                            Healthy
+                        </span>
+                    </div>
+                    
+                    <div class="metrics-inline">
+                        <div class="metric-item">
+                            <span class="metric-icon">⚡</span>
+                            <span class="metric-value">12ms</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-icon">✓</span>
+                            <span class="metric-value">200</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-icon">🕐</span>
+                            <span class="metric-value">30s ago</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-actions">
+                        <button class="btn-icon">▶</button>
+                        <button class="btn-icon">📊</button>
+                        <button class="btn-icon">✎</button>
+                        <button class="btn-icon danger">✕</button>
+                    </div>
+                </div>
+
+                <!-- Card 8: Email Service -->
+                <div class="endpoint-card status-healthy">
+                    <div class="endpoint-header">
+                        <h3>Email Service API</h3>
+                        <span class="badge badge-rest">REST</span>
+                    </div>
+                    
+                    <div class="endpoint-url">
+                        mail.sendgrid.com/v3/health
+                    </div>
+                    
+                    <div class="status-bar">
+                        <span class="status-pill success">
+                            <span class="status-dot"></span>
+                            Healthy
+                        </span>
+                    </div>
+                    
+                    <div class="metrics-inline">
+                        <div class="metric-item">
+                            <span class="metric-icon">⚡</span>
+                            <span class="metric-value">178ms</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-icon">✓</span>
+                            <span class="metric-value">200</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-icon">🕐</span>
+                            <span class="metric-value">3m ago</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-actions">
+                        <button class="btn-icon">▶</button>
+                        <button class="btn-icon">📊</button>
+                        <button class="btn-icon">✎</button>
+                        <button class="btn-icon danger">✕</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 App Health Monitor - Compact View</p>
+        </div>
+    </footer>
+</body>
+</html>

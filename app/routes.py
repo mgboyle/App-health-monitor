@@ -18,14 +18,56 @@ def index():
     
     # Get latest status for each endpoint
     endpoint_statuses = []
+    healthy_count = 0
+    failed_count = 0
+    total_response_time = 0
+    response_count = 0
+    critical_alerts = []
+    
     for endpoint in endpoints:
         latest_check = HealthChecker.get_latest_status(endpoint.id)
         endpoint_statuses.append({
             'endpoint': endpoint,
             'latest_check': latest_check
         })
+        
+        # Calculate statistics
+        if latest_check:
+            if latest_check.status == 'success':
+                healthy_count += 1
+            else:
+                failed_count += 1
+                # Add to critical alerts if failed or timeout
+                critical_alerts.append({
+                    'endpoint': endpoint,
+                    'check': latest_check
+                })
+            
+            # Calculate average response time
+            if latest_check.response_time:
+                total_response_time += latest_check.response_time
+                response_count += 1
     
-    return render_template('index.html', endpoint_statuses=endpoint_statuses)
+    # Calculate statistics
+    total_endpoints = len(endpoints)
+    avg_response_time = round(total_response_time / response_count, 2) if response_count > 0 else 0
+    
+    # Sort alerts by time (most recent first)
+    critical_alerts.sort(key=lambda x: x['check'].checked_at, reverse=True)
+    
+    stats = {
+        'healthy_count': healthy_count,
+        'failed_count': failed_count,
+        'total_endpoints': total_endpoints,
+        'avg_response_time': avg_response_time
+    }
+    
+    return render_template(
+        'index.html', 
+        endpoint_statuses=endpoint_statuses,
+        stats=stats,
+        critical_alerts=critical_alerts
+    )
 
 
 @bp.route('/endpoints/add', methods=['GET', 'POST'])
