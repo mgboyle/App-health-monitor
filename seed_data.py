@@ -13,7 +13,7 @@ def seed_sample_endpoints():
         # Clear existing endpoints
         Endpoint.query.delete()
         
-        # REST API Example - Open-Meteo Weather API
+        # REST API Example - Open-Meteo Weather API with JSON validation
         weather_api = Endpoint(
             name='Open-Meteo Weather API (Toronto)',
             url='https://api.open-meteo.com/v1/forecast?latitude=43.7&longitude=-79.4&current_weather=true',
@@ -22,10 +22,13 @@ def seed_sample_endpoints():
             soap_payload=None,
             check_interval=180,
             timeout=15,
-            enabled=True
+            enabled=True,
+            validation_enabled=True,
+            validation_type='contains',
+            expected_content='"current_weather"'
         )
         
-        # CountryInfo SOAP Service - CapitalCity operation
+        # CountryInfo SOAP Service - CapitalCity operation with validation
         capital_city = Endpoint(
             name='CountryInfo - CapitalCity (US)',
             url='http://webservices.oorsprong.org/websamples.countryinfo/CountryInfoService.wso',
@@ -41,10 +44,13 @@ def seed_sample_endpoints():
 </soap:Envelope>''',
             check_interval=300,
             timeout=30,
-            enabled=True
+            enabled=True,
+            validation_enabled=True,
+            validation_type='contains',
+            expected_content='Washington'
         )
         
-        # CountryInfo SOAP Service - CountryName operation
+        # CountryInfo SOAP Service - CountryName operation with regex validation
         country_name = Endpoint(
             name='CountryInfo - CountryName (GB)',
             url='http://webservices.oorsprong.org/websamples.countryinfo/CountryInfoService.wso',
@@ -60,10 +66,13 @@ def seed_sample_endpoints():
 </soap:Envelope>''',
             check_interval=300,
             timeout=30,
-            enabled=True
+            enabled=True,
+            validation_enabled=True,
+            validation_type='regex',
+            expected_content='United Kingdom|Great Britain'
         )
         
-        # CountryInfo SOAP Service - ListOfCountryNamesByName
+        # CountryInfo SOAP Service - ListOfCountryNamesByName with validation
         list_countries = Endpoint(
             name='CountryInfo - List Countries',
             url='http://webservices.oorsprong.org/websamples.countryinfo/CountryInfoService.wso',
@@ -77,7 +86,10 @@ def seed_sample_endpoints():
 </soap:Envelope>''',
             check_interval=300,
             timeout=30,
-            enabled=True
+            enabled=True,
+            validation_enabled=True,
+            validation_type='contains',
+            expected_content='<tCountryCodeAndName>'
         )
         
         # Add all endpoints
@@ -89,11 +101,14 @@ def seed_sample_endpoints():
         # Commit to database
         db.session.commit()
         
-        print("✅ Successfully seeded 4 sample endpoints:")
-        print("   1. Open-Meteo Weather API (Toronto) - REST")
-        print("   2. CountryInfo - CapitalCity (US) - SOAP")
-        print("   3. CountryInfo - CountryName (GB) - SOAP")
-        print("   4. CountryInfo - List Countries - SOAP")
+        print("✅ Successfully seeded 4 sample endpoints with validation:")
+        print("   1. Open-Meteo Weather API - REST (JSON validation)")
+        print("   2. CountryInfo - CapitalCity - SOAP (contains 'Washington')")
+        print("   3. CountryInfo - CountryName - SOAP (regex validation)")
+        print("   4. CountryInfo - List Countries - SOAP (XML tag validation)")
+        print("\n📋 Validation Types Demonstrated:")
+        print("   • Contains: Simple string matching")
+        print("   • Regex: Pattern matching with alternatives")
         print("\nYou can now test these endpoints at http://localhost:5001")
 
 if __name__ == '__main__':

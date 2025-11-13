@@ -58,12 +58,14 @@
         </div>
         <div class="alerts-list">
             {% for alert in critical_alerts[:5] %}
-            <div class="alert-item {% if alert.check.status == 'failure' %}critical{% else %}warning{% endif %}">
+            <div class="alert-item {% if alert.check.status == 'failure' %}critical{% elif alert.check.status == 'validation_failed' %}warning{% else %}warning{% endif %}">
                 <div class="alert-indicator"></div>
                 <div class="alert-content">
                     <div class="alert-title">{{ alert.endpoint.name }}</div>
                     <div class="alert-description">
-                        {% if alert.check.error_message %}
+                        {% if alert.check.status == 'validation_failed' and alert.check.validation_error %}
+                            ⚠️ Validation Failed: {{ alert.check.validation_error }}
+                        {% elif alert.check.error_message %}
                             {{ alert.check.error_message }}
                         {% elif alert.check.status == 'timeout' %}
                             Request timeout after {{ alert.endpoint.timeout }}s
@@ -115,8 +117,12 @@
                      data-response-time="{% if item.latest_check and item.latest_check.response_time %}{{ item.latest_check.response_time }}{% endif %}"
                      data-checked-at="{% if item.latest_check %}{{ item.latest_check.checked_at.strftime('%Y-%m-%d %H:%M:%S') }}{% endif %}"
                      data-error-message="{% if item.latest_check and item.latest_check.error_message %}{{ item.latest_check.error_message }}{% endif %}"
+                     data-validation-error="{% if item.latest_check and item.latest_check.validation_error %}{{ item.latest_check.validation_error }}{% endif %}"
                      data-check-interval="{{ item.endpoint.check_interval }}"
-                     data-enabled="{{ item.endpoint.enabled|lower }}">
+                     data-enabled="{{ item.endpoint.enabled|lower }}"
+                     data-validation-enabled="{{ item.endpoint.validation_enabled|lower }}"
+                     data-validation-type="{{ item.endpoint.validation_type or '' }}"
+                     data-auth-type="{{ item.endpoint.auth_type or '' }}">
                     <div class="endpoint-status-dot"></div>
                     <div class="endpoint-info">
                         <div class="endpoint-name">{{ item.endpoint.name }}</div>
@@ -216,8 +222,12 @@ function loadEndpointDetails(endpointId) {
     const responseTime = endpointItem.dataset.responseTime;
     const checkedAt = endpointItem.dataset.checkedAt;
     const errorMessage = endpointItem.dataset.errorMessage;
+    const validationError = endpointItem.dataset.validationError;
     const checkInterval = endpointItem.dataset.checkInterval;
     const enabled = endpointItem.dataset.enabled;
+    const validationEnabled = endpointItem.dataset.validationEnabled;
+    const validationType = endpointItem.dataset.validationType;
+    const authType = endpointItem.dataset.authType;
     
     let statusBadgeClass = 'unknown';
     let statusText = 'Unknown';
@@ -227,6 +237,10 @@ function loadEndpointDetails(endpointId) {
         statusBadgeClass = 'success';
         statusText = 'Healthy';
         statusIcon = '✓';
+    } else if (status === 'validation_failed') {
+        statusBadgeClass = 'warning';
+        statusText = 'Validation Failed';
+        statusIcon = '⚠';
     } else if (status === 'failure') {
         statusBadgeClass = 'failed';
         statusText = 'Failed';
@@ -289,6 +303,32 @@ function loadEndpointDetails(endpointId) {
                     </div>
                 </div>
             </div>
+
+            ${validationEnabled === 'true' ? `
+            <div class="detail-section">
+                <label>Response Validation</label>
+                <div class="detail-value">
+                    <strong>Type:</strong> ${validationType || 'N/A'}<br>
+                    <strong>Status:</strong> ${status === 'validation_failed' ? '❌ Failed' : status === 'success' ? '✅ Passed' : 'Not checked'}
+                </div>
+            </div>
+            ` : ''}
+
+            ${authType ? `
+            <div class="detail-section">
+                <label>Authentication</label>
+                <div class="detail-value">
+                    ${authType === 'basic' ? '🔐 Basic Auth' : authType === 'kerberos' ? '🎫 Kerberos (Default Credentials)' : authType}
+                </div>
+            </div>
+            ` : ''}
+
+            ${validationError ? `
+            <div class="detail-section">
+                <label>Validation Error</label>
+                <div class="error-message">⚠️ ${validationError}</div>
+            </div>
+            ` : ''}
 
             ${errorMessage ? `
             <div class="detail-section">

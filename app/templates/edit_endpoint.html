@@ -73,6 +73,70 @@
             </label>
         </div>
 
+        <!-- Response Validation Section -->
+        <div class="form-section">
+            <h3>Response Validation</h3>
+            
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="validation_enabled" name="validation_enabled" onchange="toggleValidationFields()" {% if endpoint.validation_enabled %}checked{% endif %}>
+                    Enable response content validation
+                </label>
+                <small style="color: #666; display: block; margin-top: 0.25rem;">Validate that the response contains expected content (helps catch "silent failures")</small>
+            </div>
+
+            <div id="validationFields" style="display: none;">
+                <div class="form-group">
+                    <label for="validation_type">Validation Type</label>
+                    <select id="validation_type" name="validation_type">
+                        <option value="contains" {% if endpoint.validation_type == 'contains' %}selected{% endif %}>Response Contains String</option>
+                        <option value="equals" {% if endpoint.validation_type == 'equals' %}selected{% endif %}>Response Equals String</option>
+                        <option value="regex" {% if endpoint.validation_type == 'regex' %}selected{% endif %}>Regex Pattern Match</option>
+                        <option value="json_path" {% if endpoint.validation_type == 'json_path' %}selected{% endif %}>JSON Path Value Check</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="expected_content">Expected Content</label>
+                    <textarea id="expected_content" name="expected_content" rows="3" placeholder='e.g., "status": "ok" or {"result": "success"} or use regex: ^OK.*'>{{ endpoint.expected_content or '' }}</textarea>
+                    <small style="color: #666; display: block; margin-top: 0.25rem;">
+                        • Contains: Check if response contains this text<br>
+                        • Equals: Response must exactly match this text<br>
+                        • Regex: Match using regular expression pattern<br>
+                        • JSON Path: e.g., "$.status=ok" or "$.data.count>0"
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Authentication Section -->
+        <div class="form-section">
+            <h3>Authentication</h3>
+            
+            <div class="form-group">
+                <label for="auth_type">Authentication Type</label>
+                <select id="auth_type" name="auth_type" onchange="toggleAuthFields()">
+                    <option value="" {% if not endpoint.auth_type %}selected{% endif %}>None</option>
+                    <option value="basic" {% if endpoint.auth_type == 'basic' %}selected{% endif %}>Basic Auth (Username/Password)</option>
+                    <option value="kerberos" {% if endpoint.auth_type == 'kerberos' %}selected{% endif %}>Kerberos (Default Credentials)</option>
+                </select>
+                <small style="color: #666; display: block; margin-top: 0.25rem;">Kerberos uses your current system credentials (no username/password needed)</small>
+            </div>
+
+            <div id="authFields" style="display: none;">
+                <div class="form-group">
+                    <label for="auth_username">Username</label>
+                    <input type="text" id="auth_username" name="auth_username" placeholder="username" value="{{ endpoint.auth_username or '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="auth_password">Password</label>
+                    <input type="password" id="auth_password" name="auth_password" placeholder="Leave blank to keep current password" autocomplete="new-password">
+                    <small style="color: #666; display: block; margin-top: 0.25rem;">Leave blank to keep existing password unchanged</small>
+                </div>
+            </div>
+        </div>
+
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">Save Changes</button>
             <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Cancel</a>
@@ -85,6 +149,19 @@ function toggleSoapFields() {
     const endpointType = document.getElementById('endpoint_type').value;
     const soapFields = document.getElementById('soapFields');
     soapFields.style.display = endpointType === 'SOAP' ? 'block' : 'none';
+}
+
+function toggleValidationFields() {
+    const validationEnabled = document.getElementById('validation_enabled').checked;
+    const validationFields = document.getElementById('validationFields');
+    validationFields.style.display = validationEnabled ? 'block' : 'none';
+}
+
+function toggleAuthFields() {
+    const authType = document.getElementById('auth_type').value;
+    const authFields = document.getElementById('authFields');
+    // Show fields only for Basic auth (Windows/Kerberos can use system credentials)
+    authFields.style.display = authType === 'basic' ? 'block' : 'none';
 }
 
 async function loadWsdlOperations() {
@@ -176,6 +253,8 @@ async function loadSamplePayload() {
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     toggleSoapFields();
+    toggleValidationFields();
+    toggleAuthFields();
 });
 </script>
 {% endblock %}

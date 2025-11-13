@@ -37,7 +37,7 @@ def index():
                 healthy_count += 1
             else:
                 failed_count += 1
-                # Add to critical alerts if failed or timeout
+                # Add to critical alerts if failed, timeout, or validation failed
                 critical_alerts.append({
                     'endpoint': endpoint,
                     'check': latest_check
@@ -85,6 +85,16 @@ def add_endpoint():
         soap_action = request.form.get('soap_action', '').strip() or None
         soap_payload = request.form.get('soap_payload', '').strip() or None
         
+        # Validation fields
+        validation_enabled = request.form.get('validation_enabled') == 'on'
+        validation_type = request.form.get('validation_type', '').strip() or None
+        expected_content = request.form.get('expected_content', '').strip() or None
+        
+        # Authentication fields
+        auth_type = request.form.get('auth_type', '').strip() or None
+        auth_username = request.form.get('auth_username', '').strip() or None
+        auth_password = request.form.get('auth_password', '').strip() or None
+        
         if not name or not url:
             flash('Name and URL are required', 'error')
             return render_template('add_endpoint.html')
@@ -97,7 +107,13 @@ def add_endpoint():
             timeout=timeout,
             enabled=enabled,
             soap_action=soap_action,
-            soap_payload=soap_payload
+            soap_payload=soap_payload,
+            validation_enabled=validation_enabled,
+            validation_type=validation_type if validation_enabled else None,
+            expected_content=expected_content if validation_enabled else None,
+            auth_type=auth_type,
+            auth_username=auth_username if auth_type == 'Basic' else None,
+            auth_password=auth_password if auth_type == 'Basic' else None
         )
         
         db.session.add(endpoint)
@@ -125,6 +141,18 @@ def edit_endpoint(endpoint_id):
         # SOAP-specific fields
         endpoint.soap_action = request.form.get('soap_action', '').strip() or None
         endpoint.soap_payload = request.form.get('soap_payload', '').strip() or None
+        
+        # Validation fields
+        endpoint.validation_enabled = request.form.get('validation_enabled') == 'on'
+        endpoint.validation_type = request.form.get('validation_type', '').strip() or None
+        endpoint.expected_content = request.form.get('expected_content', '').strip() or None
+        
+        # Authentication fields
+        endpoint.auth_type = request.form.get('auth_type', '').strip() or None
+        endpoint.auth_username = request.form.get('auth_username', '').strip() or None
+        auth_password = request.form.get('auth_password', '').strip()
+        if auth_password:  # Only update password if provided
+            endpoint.auth_password = auth_password
         
         endpoint.updated_at = datetime.utcnow()
         

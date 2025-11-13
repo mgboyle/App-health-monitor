@@ -526,6 +526,12 @@ main {
     background: var(--warning);
 }
 
+.endpoint-item.status-validation_failed .endpoint-status-dot {
+    background: var(--warning);
+    border: 2px solid var(--warning-dark);
+    box-shadow: 0 0 8px var(--warning);
+}
+
 .endpoint-item.status-unknown .endpoint-status-dot {
     background: var(--gray-400);
 }
@@ -788,6 +794,18 @@ main {
     padding: 2rem;
     border-radius: var(--radius);
     box-shadow: var(--shadow-md);
+}
+
+.form-section {
+    margin: 2rem 0;
+    padding-top: 1.5rem;
+    border-top: 2px solid var(--gray-200);
+}
+
+.form-section h3 {
+    color: var(--gray-800);
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
 }
 
 .form-group {

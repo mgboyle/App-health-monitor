@@ -66,6 +66,68 @@
             </div>
         </div>
 
+        <!-- Response Validation Section -->
+        <div class="form-section">
+            <h3>Response Validation (Optional)</h3>
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="validation_enabled" name="validation_enabled" onchange="toggleValidationFields()">
+                    Enable response content validation
+                </label>
+            </div>
+
+            <div id="validationFields" style="display: none;">
+                <div class="form-group">
+                    <label for="validation_type">Validation Type</label>
+                    <select id="validation_type" name="validation_type">
+                        <option value="contains">Contains - Response must contain text</option>
+                        <option value="equals">Equals - Response must exactly match</option>
+                        <option value="regex">Regex - Response must match pattern</option>
+                        <option value="json_path">JSON Path - Check JSON field value</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="expected_content">Expected Content</label>
+                    <textarea id="expected_content" name="expected_content" rows="3" placeholder="Examples:&#10;- Contains: &quot;status&quot;:&quot;ok&quot;&#10;- Equals: healthy&#10;- Regex: status.*ok&#10;- JSON Path: status=ok or data.user.name"></textarea>
+                    <small style="color: #666; display: block; margin-top: 0.25rem;">
+                        For JSON Path: use dot notation (e.g., "status=ok" or "data.results.0.name")
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Authentication Section -->
+        <div class="form-section">
+            <h3>Authentication (Optional)</h3>
+            <div class="form-group">
+                <label for="auth_type">Authentication Type</label>
+                <select id="auth_type" name="auth_type" onchange="toggleAuthFields()">
+                    <option value="">None</option>
+                    <option value="basic">Basic Authentication (Username/Password)</option>
+                    <option value="kerberos">Kerberos (Default Credentials)</option>
+                </select>
+                <small style="color: #666; display: block; margin-top: 0.25rem;">Kerberos uses your current system credentials (no username/password needed)</small>
+            </div>
+
+            <div id="authFields" style="display: none;">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="auth_username">Username</label>
+                        <input type="text" id="auth_username" name="auth_username" placeholder="username">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="auth_password">Password</label>
+                        <input type="password" id="auth_password" name="auth_password" placeholder="password">
+                    </div>
+                </div>
+                <small style="color: #666; display: block; margin-top: 0.25rem;">
+                    ⚠️ Passwords are stored in plaintext. Use service accounts with limited permissions.
+                </small>
+            </div>
+        </div>
+
         <div class="form-group">
             <label class="checkbox-label">
                 <input type="checkbox" name="enabled" checked>
@@ -85,6 +147,20 @@ function toggleSoapFields() {
     const endpointType = document.getElementById('endpoint_type').value;
     const soapFields = document.getElementById('soapFields');
     soapFields.style.display = endpointType === 'SOAP' ? 'block' : 'none';
+}
+
+function toggleValidationFields() {
+    const validationEnabled = document.getElementById('validation_enabled').checked;
+    const validationFields = document.getElementById('validationFields');
+    validationFields.style.display = validationEnabled ? 'block' : 'none';
+}
+
+function toggleAuthFields() {
+    const authType = document.getElementById('auth_type').value;
+    const authFields = document.getElementById('authFields');
+    
+    // Only show username/password for Basic auth
+    authFields.style.display = authType === 'basic' ? 'block' : 'none';
 }
 
 async function loadWsdlOperations() {
