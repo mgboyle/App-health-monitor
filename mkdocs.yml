@@ -1,0 +1,89 @@
+site_name: App Health Monitor Documentation
+site_description: Comprehensive documentation for App Health Monitor - A web application for monitoring REST, SOAP, WCF, and GraphQL endpoints
+site_author: App Health Monitor Team
+site_url: https://mgboyle.github.io/App-health-monitor
+
+repo_name: mgboyle/App-health-monitor
+repo_url: https://github.com/mgboyle/App-health-monitor
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - User Guide:
+      - Quick Start: user-guide/quick-start.md
+      - Installation: user-guide/installation.md
+      - Configuration: user-guide/configuration.md
+      - Using the Dashboard: user-guide/dashboard.md
+      - Managing Endpoints: user-guide/managing-endpoints.md
+      - Viewing Logs: user-guide/logs.md
+      - Troubleshooting: user-guide/troubleshooting.md
+  - Developer Guide:
+      - Architecture: developer-guide/architecture.md
+      - Database Schema: developer-guide/database-schema.md
+      - Development Setup: developer-guide/development-setup.md
+      - Contributing: developer-guide/contributing.md
+      - Testing: developer-guide/testing.md
+  - API Reference:
+      - Overview: api/overview.md
+      - REST API: api/rest-api.md
+      - OpenAPI Specification: api/openapi.md
+  - Deployment:
+      - Production Best Practices: deployment/production.md
+      - Docker Deployment: deployment/docker.md
+      - Security Hardening: deployment/security.md
+      - Backup & Recovery: deployment/backup.md
+  - Roadmap: roadmap.md
+  - SOAP Testing Guide: testing-guide.md
+
+plugins:
+  - search
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/mgboyle/App-health-monitor
+
+copyright: Copyright &copy; 2024-2025 App Health Monitor Team

@@ -55,3 +55,6 @@ Thumbs.db
 # Application specific
 instance/
 config.local.py
+
+# MkDocs build output
+site/
