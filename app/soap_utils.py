@@ -39,14 +39,38 @@ class WSDLParser:
         try:
             # Validate URL scheme to prevent SSRF
             from urllib.parse import urlparse
+            import ipaddress
+            import socket
+            
             parsed_url = urlparse(wsdl_url)
             if parsed_url.scheme not in WSDLParser.ALLOWED_SCHEMES:
                 print(f"Invalid URL scheme: {parsed_url.scheme}")
                 return None
             
             # Prevent access to internal/private networks
-            if parsed_url.hostname in ['localhost', '127.0.0.1', '0.0.0.0']:
+            hostname = parsed_url.hostname
+            if not hostname:
+                print("Invalid URL: no hostname")
+                return None
+            
+            # Block localhost and common local addresses
+            if hostname.lower() in ['localhost', '127.0.0.1', '0.0.0.0', '::1', '[::1]']:
                 print("Access to localhost is not allowed")
+                return None
+            
+            # Try to resolve hostname and check if it's a private IP
+            try:
+                ip = socket.gethostbyname(hostname)
+                ip_obj = ipaddress.ip_address(ip)
+                
+                # Block private, loopback, link-local, and reserved IPs
+                if (ip_obj.is_private or ip_obj.is_loopback or 
+                    ip_obj.is_link_local or ip_obj.is_reserved):
+                    print(f"Access to private/internal IP {ip} is not allowed")
+                    return None
+            except (socket.gaierror, ValueError) as e:
+                # If hostname resolution fails, block it for security
+                print(f"Could not resolve hostname: {e}")
                 return None
             
             response = requests.get(
