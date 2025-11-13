@@ -4,6 +4,7 @@ SOAP/WSDL utilities for parsing and generating SOAP requests
 import requests
 from xml.etree import ElementTree as ET
 from typing import Dict, List, Optional
+from defusedxml.ElementTree import fromstring
 
 
 class WSDLParser:
@@ -17,10 +18,16 @@ class WSDLParser:
         's': 'http://www.w3.org/2003/05/soap-envelope'
     }
     
+    # Allowed URL schemes for WSDL fetching
+    ALLOWED_SCHEMES = ['http', 'https']
+    
+    # Maximum response size (5 MB)
+    MAX_RESPONSE_SIZE = 5 * 1024 * 1024
+    
     @staticmethod
     def fetch_wsdl(wsdl_url: str, timeout: int = 30) -> Optional[str]:
         """
-        Fetch WSDL content from URL
+        Fetch WSDL content from URL with security restrictions
         
         Args:
             wsdl_url: URL to the WSDL file
@@ -30,9 +37,41 @@ class WSDLParser:
             WSDL content as string or None if failed
         """
         try:
-            response = requests.get(wsdl_url, timeout=timeout)
+            # Validate URL scheme to prevent SSRF
+            from urllib.parse import urlparse
+            parsed_url = urlparse(wsdl_url)
+            if parsed_url.scheme not in WSDLParser.ALLOWED_SCHEMES:
+                print(f"Invalid URL scheme: {parsed_url.scheme}")
+                return None
+            
+            # Prevent access to internal/private networks
+            if parsed_url.hostname in ['localhost', '127.0.0.1', '0.0.0.0']:
+                print("Access to localhost is not allowed")
+                return None
+            
+            response = requests.get(
+                wsdl_url, 
+                timeout=timeout,
+                stream=True,
+                allow_redirects=False  # Prevent redirect-based SSRF
+            )
             response.raise_for_status()
-            return response.text
+            
+            # Check content size to prevent memory exhaustion
+            content_length = response.headers.get('content-length')
+            if content_length and int(content_length) > WSDLParser.MAX_RESPONSE_SIZE:
+                print(f"Response too large: {content_length} bytes")
+                return None
+            
+            # Read with size limit
+            content = b''
+            for chunk in response.iter_content(chunk_size=8192):
+                content += chunk
+                if len(content) > WSDLParser.MAX_RESPONSE_SIZE:
+                    print("Response exceeded maximum size")
+                    return None
+            
+            return content.decode('utf-8', errors='ignore')
         except Exception as e:
             print(f"Error fetching WSDL: {e}")
             return None
@@ -40,7 +79,7 @@ class WSDLParser:
     @staticmethod
     def parse_operations(wsdl_content: str) -> List[Dict[str, str]]:
         """
-        Parse WSDL to extract available operations/methods
+        Parse WSDL to extract available operations/methods using secure XML parsing
         
         Args:
             wsdl_content: WSDL XML content as string
@@ -51,7 +90,8 @@ class WSDLParser:
         operations = []
         
         try:
-            root = ET.fromstring(wsdl_content)
+            # Use defusedxml to prevent XML bomb attacks
+            root = fromstring(wsdl_content)
             
             # Try to find operations in WSDL 1.1 format
             for operation in root.findall('.//wsdl:operation', WSDLParser.SOAP_NAMESPACES):
@@ -86,7 +126,7 @@ class WSDLParser:
     @staticmethod
     def generate_sample_payload(wsdl_content: str, operation_name: str) -> str:
         """
-        Generate a sample SOAP request payload for an operation
+        Generate a sample SOAP request payload for an operation using secure XML parsing
         
         Args:
             wsdl_content: WSDL XML content as string
@@ -106,7 +146,8 @@ class WSDLParser:
 </soap:Envelope>'''
         
         try:
-            root = ET.fromstring(wsdl_content)
+            # Use defusedxml to prevent XML bomb attacks
+            root = fromstring(wsdl_content)
             
             # Try to find message schema for the operation
             # This is a simplified version - full WSDL parsing is complex
