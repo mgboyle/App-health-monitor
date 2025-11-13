@@ -5,106 +5,360 @@
 {% block content %}
 <div class="dashboard">
     <div class="header-section">
-        <h1>Endpoint Dashboard</h1>
-        <a href="{{ url_for('main.add_endpoint') }}" class="btn btn-primary">+ Add Endpoint</a>
+        <h1>Service Health Dashboard</h1>
+        <div class="header-actions">
+            <form action="{{ url_for('main.index') }}" method="get" style="display: inline;">
+                <button type="submit" class="btn btn-secondary">⟳ Refresh All</button>
+            </form>
+            <a href="{{ url_for('main.add_endpoint') }}" class="btn btn-primary">+ Add Endpoint</a>
+        </div>
     </div>
 
-    {% if endpoint_statuses %}
-        <div class="endpoints-grid">
-            {% for item in endpoint_statuses %}
-                <div class="endpoint-card">
-                    <div class="endpoint-header">
-                        <h3>{{ item.endpoint.name }}</h3>
-                        <span class="badge badge-{{ item.endpoint.endpoint_type.lower() }}">
-                            {{ item.endpoint.endpoint_type }}
-                        </span>
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card stat-healthy">
+            <div class="stat-icon">✓</div>
+            <div class="stat-content">
+                <div class="stat-value">{{ stats.healthy_count }}</div>
+                <div class="stat-label">Healthy</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-failed">
+            <div class="stat-icon">✕</div>
+            <div class="stat-content">
+                <div class="stat-value">{{ stats.failed_count }}</div>
+                <div class="stat-label">Failed</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-total">
+            <div class="stat-icon">🌐</div>
+            <div class="stat-content">
+                <div class="stat-value">{{ stats.total_endpoints }}</div>
+                <div class="stat-label">Total Endpoints</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-performance">
+            <div class="stat-icon">⚡</div>
+            <div class="stat-content">
+                <div class="stat-value">{{ "%.0f"|format(stats.avg_response_time) }}ms</div>
+                <div class="stat-label">Avg Response</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Critical Alerts Section -->
+    {% if critical_alerts %}
+    <div class="alerts-section">
+        <div class="section-header">
+            <h2>🚨 Critical Alerts</h2>
+            <span class="alert-count">{{ critical_alerts|length }}</span>
+        </div>
+        <div class="alerts-list">
+            {% for alert in critical_alerts[:5] %}
+            <div class="alert-item {% if alert.check.status == 'failure' %}critical{% elif alert.check.status == 'validation_failed' %}warning{% else %}warning{% endif %}">
+                <div class="alert-indicator"></div>
+                <div class="alert-content">
+                    <div class="alert-title">{{ alert.endpoint.name }}</div>
+                    <div class="alert-description">
+                        {% if alert.check.status == 'validation_failed' and alert.check.validation_error %}
+                            ⚠️ Validation Failed: {{ alert.check.validation_error }}
+                        {% elif alert.check.error_message %}
+                            {{ alert.check.error_message }}
+                        {% elif alert.check.status == 'timeout' %}
+                            Request timeout after {{ alert.endpoint.timeout }}s
+                        {% else %}
+                            HTTP {{ alert.check.status_code }} Error
+                        {% endif %}
                     </div>
-                    
-                    <div class="endpoint-url">
-                        <a href="{{ item.endpoint.url }}" target="_blank" rel="noopener">
-                            {{ item.endpoint.url }}
-                        </a>
-                    </div>
-
-                    {% if item.latest_check %}
-                        <div class="status-section">
-                            <div class="status-badge status-{{ item.latest_check.status }}">
-                                {% if item.latest_check.status == 'success' %}
-                                    ✓ Healthy
-                                {% elif item.latest_check.status == 'failure' %}
-                                    ✗ Failed
-                                {% elif item.latest_check.status == 'timeout' %}
-                                    ⏱ Timeout
-                                {% else %}
-                                    ? Unknown
-                                {% endif %}
-                            </div>
-                            
-                            <div class="metrics">
-                                {% if item.latest_check.status_code %}
-                                    <div class="metric">
-                                        <span class="metric-label">Status Code:</span>
-                                        <span class="metric-value">{{ item.latest_check.status_code }}</span>
-                                    </div>
-                                {% endif %}
-                                
-                                {% if item.latest_check.response_time %}
-                                    <div class="metric">
-                                        <span class="metric-label">Response Time:</span>
-                                        <span class="metric-value">{{ "%.2f"|format(item.latest_check.response_time) }} ms</span>
-                                    </div>
-                                {% endif %}
-                                
-                                <div class="metric">
-                                    <span class="metric-label">Last Checked:</span>
-                                    <span class="metric-value">{{ item.latest_check.checked_at.strftime('%Y-%m-%d %H:%M:%S') }}</span>
-                                </div>
-                            </div>
-
-                            {% if item.latest_check.error_message %}
-                                <div class="error-message">
-                                    {{ item.latest_check.error_message }}
-                                </div>
-                            {% endif %}
-                        </div>
-                    {% else %}
-                        <div class="status-section">
-                            <div class="status-badge status-unknown">
-                                Not yet checked
-                            </div>
-                        </div>
-                    {% endif %}
-
-                    <div class="endpoint-actions">
-                        <form action="{{ url_for('main.check_endpoint_now', endpoint_id=item.endpoint.id) }}" method="post" style="display: inline;">
-                            <button type="submit" class="btn btn-sm btn-secondary">Check Now</button>
-                        </form>
-                        <a href="{{ url_for('main.endpoint_logs', endpoint_id=item.endpoint.id) }}" class="btn btn-sm btn-secondary">View Logs</a>
-                        <a href="{{ url_for('main.edit_endpoint', endpoint_id=item.endpoint.id) }}" class="btn btn-sm btn-secondary">Edit</a>
-                        <form action="{{ url_for('main.delete_endpoint', endpoint_id=item.endpoint.id) }}" method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this endpoint?');">
-                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                        </form>
-                    </div>
-
-                    <div class="endpoint-meta">
-                        <span class="enabled-status">
-                            {% if item.endpoint.enabled %}
-                                <span class="status-indicator status-enabled">●</span> Enabled
-                            {% else %}
-                                <span class="status-indicator status-disabled">●</span> Disabled
-                            {% endif %}
-                        </span>
-                        <span>Check interval: {{ item.endpoint.check_interval }}s</span>
+                    <div class="alert-meta">
+                        <span class="alert-time">⏰ {{ alert.check.checked_at.strftime('%M') }} minutes ago</span>
+                        <span class="alert-type">{{ alert.endpoint.endpoint_type }}</span>
                     </div>
                 </div>
+                <div class="alert-actions">
+                    <a href="{{ url_for('main.endpoint_logs', endpoint_id=alert.endpoint.id) }}" class="btn-small btn-primary">View Details</a>
+                    <form action="{{ url_for('main.check_endpoint_now', endpoint_id=alert.endpoint.id) }}" method="post" style="display: inline;">
+                        <button type="submit" class="btn-small">Retry</button>
+                    </form>
+                </div>
+            </div>
             {% endfor %}
         </div>
-    {% else %}
-        <div class="empty-state">
-            <h2>No endpoints configured</h2>
-            <p>Get started by adding your first endpoint to monitor.</p>
-            <a href="{{ url_for('main.add_endpoint') }}" class="btn btn-primary">Add Your First Endpoint</a>
+    </div>
+    {% endif %}
+
+    <!-- Main Content: Split View -->
+    {% if endpoint_statuses %}
+    <div class="content-split">
+        
+        <!-- Left Column: All Endpoints List -->
+        <div class="endpoints-list">
+            <div class="section-header">
+                <h2>All Endpoints</h2>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">All ({{ endpoint_statuses|length }})</button>
+                    <button class="filter-btn" data-filter="REST">REST ({{ endpoint_statuses|selectattr('endpoint.endpoint_type', 'equalto', 'REST')|list|length }})</button>
+                    <button class="filter-btn" data-filter="SOAP">SOAP ({{ endpoint_statuses|selectattr('endpoint.endpoint_type', 'equalto', 'SOAP')|list|length }})</button>
+                </div>
+            </div>
+
+            <div class="list-items">
+                {% for item in endpoint_statuses %}
+                <div class="endpoint-item {% if item.latest_check %}status-{{ item.latest_check.status }}{% else %}status-unknown{% endif %}" 
+                     data-endpoint-id="{{ item.endpoint.id }}"
+                     data-endpoint-type="{{ item.endpoint.endpoint_type }}"
+                     data-name="{{ item.endpoint.name }}"
+                     data-url="{{ item.endpoint.url }}"
+                     data-status="{% if item.latest_check %}{{ item.latest_check.status }}{% endif %}"
+                     data-status-code="{% if item.latest_check and item.latest_check.status_code %}{{ item.latest_check.status_code }}{% endif %}"
+                     data-response-time="{% if item.latest_check and item.latest_check.response_time %}{{ item.latest_check.response_time }}{% endif %}"
+                     data-checked-at="{% if item.latest_check %}{{ item.latest_check.checked_at.strftime('%Y-%m-%d %H:%M:%S') }}{% endif %}"
+                     data-error-message="{% if item.latest_check and item.latest_check.error_message %}{{ item.latest_check.error_message }}{% endif %}"
+                     data-validation-error="{% if item.latest_check and item.latest_check.validation_error %}{{ item.latest_check.validation_error }}{% endif %}"
+                     data-check-interval="{{ item.endpoint.check_interval }}"
+                     data-enabled="{{ item.endpoint.enabled|lower }}"
+                     data-validation-enabled="{{ item.endpoint.validation_enabled|lower }}"
+                     data-validation-type="{{ item.endpoint.validation_type or '' }}"
+                     data-auth-type="{{ item.endpoint.auth_type or '' }}">
+                    <div class="endpoint-status-dot"></div>
+                    <div class="endpoint-info">
+                        <div class="endpoint-name">{{ item.endpoint.name }}</div>
+                        <div class="endpoint-url">{{ item.endpoint.url[:50] }}{% if item.endpoint.url|length > 50 %}...{% endif %}</div>
+                    </div>
+                    <div class="endpoint-metrics">
+                        {% if item.latest_check and item.latest_check.response_time %}
+                            <span class="metric {% if item.latest_check.status == 'success' %}metric-success{% elif item.latest_check.status == 'failure' %}metric-danger{% else %}metric-warning{% endif %}">
+                                {{ "%.0f"|format(item.latest_check.response_time) }}ms
+                            </span>
+                        {% else %}
+                            <span class="metric metric-warning">—</span>
+                        {% endif %}
+                        {% if item.latest_check and item.latest_check.status_code %}
+                            <span class="metric">{{ item.latest_check.status_code }}</span>
+                        {% else %}
+                            <span class="metric metric-warning">N/A</span>
+                        {% endif %}
+                    </div>
+                    <button class="btn-icon" onclick="event.stopPropagation();">▶</button>
+                </div>
+                {% endfor %}
+            </div>
         </div>
+
+        <!-- Right Column: Details Panel -->
+        <div class="details-panel" id="detailsPanel">
+            <div class="section-header">
+                <h2>Endpoint Details</h2>
+                <button class="btn-icon" onclick="closeDetailsPanel()">✕</button>
+            </div>
+
+            <div id="detailsContent">
+                <div class="empty-details">
+                    <p>Select an endpoint from the list to view details</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <h2>No endpoints configured</h2>
+        <p>Get started by adding your first endpoint to monitor.</p>
+        <a href="{{ url_for('main.add_endpoint') }}" class="btn btn-primary">Add Your First Endpoint</a>
+    </div>
     {% endif %}
 </div>
+
+<script>
+// Filter endpoints by type
+document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const filter = this.dataset.filter;
+        
+        // Update active button
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Filter endpoint items
+        document.querySelectorAll('.endpoint-item').forEach(item => {
+            if (filter === 'all' || item.dataset.endpointType === filter) {
+                item.style.display = 'flex';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+});
+
+// Click endpoint to show details
+document.querySelectorAll('.endpoint-item').forEach(item => {
+    item.addEventListener('click', function() {
+        // Remove selected from all items
+        document.querySelectorAll('.endpoint-item').forEach(i => i.classList.remove('selected'));
+        // Add selected to clicked item
+        this.classList.add('selected');
+        
+        // Load endpoint details
+        const endpointId = this.dataset.endpointId;
+        loadEndpointDetails(endpointId);
+    });
+});
+
+function loadEndpointDetails(endpointId) {
+    // Fetch endpoint details from the hidden data attributes
+    const endpointItem = document.querySelector(`.endpoint-item[data-endpoint-id="${endpointId}"]`);
+    if (!endpointItem) return;
+    
+    const detailsContent = document.getElementById('detailsContent');
+    
+    // Extract data from data attributes
+    const name = endpointItem.dataset.name;
+    const url = endpointItem.dataset.url;
+    const type = endpointItem.dataset.endpointType;
+    const status = endpointItem.dataset.status;
+    const statusCode = endpointItem.dataset.statusCode;
+    const responseTime = endpointItem.dataset.responseTime;
+    const checkedAt = endpointItem.dataset.checkedAt;
+    const errorMessage = endpointItem.dataset.errorMessage;
+    const validationError = endpointItem.dataset.validationError;
+    const checkInterval = endpointItem.dataset.checkInterval;
+    const enabled = endpointItem.dataset.enabled;
+    const validationEnabled = endpointItem.dataset.validationEnabled;
+    const validationType = endpointItem.dataset.validationType;
+    const authType = endpointItem.dataset.authType;
+    
+    let statusBadgeClass = 'unknown';
+    let statusText = 'Unknown';
+    let statusIcon = '?';
+    
+    if (status === 'success') {
+        statusBadgeClass = 'success';
+        statusText = 'Healthy';
+        statusIcon = '✓';
+    } else if (status === 'validation_failed') {
+        statusBadgeClass = 'warning';
+        statusText = 'Validation Failed';
+        statusIcon = '⚠';
+    } else if (status === 'failure') {
+        statusBadgeClass = 'failed';
+        statusText = 'Failed';
+        statusIcon = '✕';
+    } else if (status === 'timeout') {
+        statusBadgeClass = 'timeout';
+        statusText = 'Timeout';
+        statusIcon = '⏱';
+    }
+    
+    detailsContent.innerHTML = `
+        <div class="detail-card">
+            <div class="detail-header">
+                <h3>${name}</h3>
+                <span class="status-badge ${statusBadgeClass}">${statusText}</span>
+            </div>
+
+            <div class="detail-section">
+                <label>Endpoint URL</label>
+                <div class="detail-value code">${url}</div>
+            </div>
+
+            <div class="detail-section">
+                <label>Type</label>
+                <div class="detail-value">${type} API</div>
+            </div>
+
+            ${status ? `
+            <div class="detail-section">
+                <label>Current Status</label>
+                <div class="status-info ${statusBadgeClass}">
+                    <span class="status-icon">${statusIcon}</span>
+                    <div>
+                        <div class="status-text">${statusText}</div>
+                        ${statusCode ? `<div class="status-code">HTTP ${statusCode}</div>` : ''}
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <label>Performance Metrics</label>
+                <div class="metrics-grid">
+                    <div class="metric-box">
+                        <div class="metric-label">Response Time</div>
+                        <div class="metric-value ${status === 'success' ? '' : 'danger'}">
+                            ${responseTime ? parseFloat(responseTime).toFixed(0) + 'ms' : '—'}
+                        </div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">Last Check</div>
+                        <div class="metric-value">${checkedAt || 'Never'}</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">Check Interval</div>
+                        <div class="metric-value">${checkInterval}s</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">Status</div>
+                        <div class="metric-value">${enabled === 'true' ? 'Enabled' : 'Disabled'}</div>
+                    </div>
+                </div>
+            </div>
+
+            ${validationEnabled === 'true' ? `
+            <div class="detail-section">
+                <label>Response Validation</label>
+                <div class="detail-value">
+                    <strong>Type:</strong> ${validationType || 'N/A'}<br>
+                    <strong>Status:</strong> ${status === 'validation_failed' ? '❌ Failed' : status === 'success' ? '✅ Passed' : 'Not checked'}
+                </div>
+            </div>
+            ` : ''}
+
+            ${authType ? `
+            <div class="detail-section">
+                <label>Authentication</label>
+                <div class="detail-value">
+                    ${authType === 'basic' ? '🔐 Basic Auth' : authType === 'kerberos' ? '🎫 Kerberos (Default Credentials)' : authType}
+                </div>
+            </div>
+            ` : ''}
+
+            ${validationError ? `
+            <div class="detail-section">
+                <label>Validation Error</label>
+                <div class="error-message">⚠️ ${validationError}</div>
+            </div>
+            ` : ''}
+
+            ${errorMessage ? `
+            <div class="detail-section">
+                <label>Error Message</label>
+                <div class="error-message">${errorMessage}</div>
+            </div>
+            ` : ''}
+            ` : '<p>No health checks yet</p>'}
+
+            <div class="detail-actions">
+                <form action="/endpoints/${endpointId}/check" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-primary">▶ Test Now</button>
+                </form>
+                <a href="/endpoints/${endpointId}/logs" class="btn btn-secondary">📊 View Logs</a>
+                <a href="/endpoints/${endpointId}/edit" class="btn btn-secondary">✎ Edit</a>
+                <form action="/endpoints/${endpointId}/delete" method="post" style="display: inline;" onsubmit="return confirm('Delete this endpoint?');">
+                    <button type="submit" class="btn btn-danger">🗑 Delete</button>
+                </form>
+            </div>
+        </div>
+    `;
+}
+
+function closeDetailsPanel() {
+    document.querySelectorAll('.endpoint-item').forEach(i => i.classList.remove('selected'));
+    document.getElementById('detailsContent').innerHTML = `
+        <div class="empty-details">
+            <p>Select an endpoint from the list to view details</p>
+        </div>
+    `;
+}
+</script>
 {% endblock %}

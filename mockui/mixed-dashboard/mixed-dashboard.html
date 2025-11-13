@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mixed Dashboard - Mock UI</title>
+    <link rel="stylesheet" href="mixed-dashboard.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <a href="/">Health Monitor</a>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/">Dashboard</a></li>
+                <li><a href="/logs">All Logs</a></li>
+                <li><a href="/endpoints/add">Add Endpoint</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <div class="container">
+            <div class="header-section">
+                <h1>Service Health Dashboard</h1>
+                <div class="header-actions">
+                    <button class="btn btn-secondary">⟳ Refresh All</button>
+                    <a href="/endpoints/add" class="btn btn-primary">+ Add Endpoint</a>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card stat-healthy">
+                    <div class="stat-icon">✓</div>
+                    <div class="stat-content">
+                        <div class="stat-value">6</div>
+                        <div class="stat-label">Healthy</div>
+                    </div>
+                </div>
+
+                <div class="stat-card stat-failed">
+                    <div class="stat-icon">✕</div>
+                    <div class="stat-content">
+                        <div class="stat-value">2</div>
+                        <div class="stat-label">Failed</div>
+                    </div>
+                </div>
+
+                <div class="stat-card stat-total">
+                    <div class="stat-icon">🌐</div>
+                    <div class="stat-content">
+                        <div class="stat-value">8</div>
+                        <div class="stat-label">Total Endpoints</div>
+                    </div>
+                </div>
+
+                <div class="stat-card stat-performance">
+                    <div class="stat-icon">⚡</div>
+                    <div class="stat-content">
+                        <div class="stat-value">245ms</div>
+                        <div class="stat-label">Avg Response</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Critical Alerts Section -->
+            <div class="alerts-section">
+                <div class="section-header">
+                    <h2>🚨 Critical Alerts</h2>
+                    <span class="alert-count">2</span>
+                </div>
+                <div class="alerts-list">
+                    <div class="alert-item critical">
+                        <div class="alert-indicator"></div>
+                        <div class="alert-content">
+                            <div class="alert-title">Production API Gateway</div>
+                            <div class="alert-description">Service Unavailable - 503 Error</div>
+                            <div class="alert-meta">
+                                <span class="alert-time">⏰ 1 minute ago</span>
+                                <span class="alert-type">REST</span>
+                            </div>
+                        </div>
+                        <div class="alert-actions">
+                            <button class="btn-small btn-primary">View Details</button>
+                            <button class="btn-small">Acknowledge</button>
+                        </div>
+                    </div>
+
+                    <div class="alert-item warning">
+                        <div class="alert-indicator"></div>
+                        <div class="alert-content">
+                            <div class="alert-title">Legacy SOAP Service</div>
+                            <div class="alert-description">Request timeout after 30s</div>
+                            <div class="alert-meta">
+                                <span class="alert-time">⏰ 5 minutes ago</span>
+                                <span class="alert-type">SOAP</span>
+                            </div>
+                        </div>
+                        <div class="alert-actions">
+                            <button class="btn-small btn-primary">View Details</button>
+                            <button class="btn-small">Acknowledge</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content: Split View -->
+            <div class="content-split">
+                
+                <!-- Left Column: All Endpoints List -->
+                <div class="endpoints-list">
+                    <div class="section-header">
+                        <h2>All Endpoints</h2>
+                        <div class="filter-buttons">
+                            <button class="filter-btn active">All (8)</button>
+                            <button class="filter-btn">REST (5)</button>
+                            <button class="filter-btn">SOAP (3)</button>
+                        </div>
+                    </div>
+
+                    <div class="list-items">
+                        <!-- Endpoint 1 -->
+                        <div class="endpoint-item status-healthy">
+                            <div class="endpoint-status-dot"></div>
+                            <div class="endpoint-info">
+                                <div class="endpoint-name">Open-Meteo Weather API</div>
+                                <div class="endpoint-url">https://api.open-meteo.com/v1/forecast...</div>
+                            </div>
+                            <div class="endpoint-metrics">
+                                <span class="metric metric-success">156ms</span>
+                                <span class="metric">200</span>
+                            </div>
+                            <button class="btn-icon">▶</button>
+                        </div>
+
+                        <!-- Endpoint 2 -->
+                        <div class="endpoint-item status-healthy">
+                            <div class="endpoint-status-dot"></div>
+                            <div class="endpoint-info">
+                                <div class="endpoint-name">CountryInfo - CapitalCity</div>
+                                <div class="endpoint-url">webservices.oorsprong.org/...</div>
+                            </div>
+                            <div class="endpoint-metrics">
+                                <span class="metric metric-success">596ms</span>
+                                <span class="metric">200</span>
+                            </div>
+                            <button class="btn-icon">▶</button>
+                        </div>
+
+                        <!-- Endpoint 3 - Failed -->
+                        <div class="endpoint-item status-failed">
+                            <div class="endpoint-status-dot"></div>
+                            <div class="endpoint-info">
+                                <div class="endpoint-name">Production API Gateway</div>
+                                <div class="endpoint-url">api.production.example.com/health</div>
+                            </div>
+                            <div class="endpoint-metrics">
+                                <span class="metric metric-danger">1245ms</span>
+                                <span class="metric metric-danger">503</span>
+                            </div>
+                            <button class="btn-icon">▶</button>
+                        </div>
+
+                        <!-- Endpoint 4 - Timeout -->
+                        <div class="endpoint-item status-timeout">
+                            <div class="endpoint-status-dot"></div>
+                            <div class="endpoint-info">
+                                <div class="endpoint-name">Legacy SOAP Service</div>
+                                <div class="endpoint-url">legacy.internal.corp/service.asmx</div>
+                            </div>
+                            <div class="endpoint-metrics">
+                                <span class="metric metric-warning">—</span>
+                                <span class="metric metric-warning">Timeout</span>
+                            </div>
+                            <button class="btn-icon">▶</button>
+                        </div>
+
+                        <!-- Endpoint 5 -->
+                        <div class="endpoint-item status-healthy">
+                            <div class="endpoint-status-dot"></div>
+                            <div class="endpoint-info">
+                                <div class="endpoint-name">Payment Gateway Health</div>
+                                <div class="endpoint-url">payments.stripe.com/v1/health</div>
+                            </div>
+                            <div class="endpoint-metrics">
+                                <span class="metric metric-success">89ms</span>
+                                <span class="metric">200</span>
+                            </div>
+                            <button class="btn-icon">▶</button>
+                        </div>
+
+                        <!-- Endpoint 6 -->
+                        <div class="endpoint-item status-healthy">
+                            <div class="endpoint-status-dot"></div>
+                            <div class="endpoint-info">
+                                <div class="endpoint-name">GraphQL API</div>
+                                <div class="endpoint-url">api.example.com/graphql</div>
+                            </div>
+                            <div class="endpoint-metrics">
+                                <span class="metric metric-success">234ms</span>
+                                <span class="metric">200</span>
+                            </div>
+                            <button class="btn-icon">▶</button>
+                        </div>
+
+                        <!-- Endpoint 7 -->
+                        <div class="endpoint-item status-healthy">
+                            <div class="endpoint-status-dot"></div>
+                            <div class="endpoint-info">
+                                <div class="endpoint-name">Database Connection</div>
+                                <div class="endpoint-url">db.internal.corp/health</div>
+                            </div>
+                            <div class="endpoint-metrics">
+                                <span class="metric metric-success">12ms</span>
+                                <span class="metric">200</span>
+                            </div>
+                            <button class="btn-icon">▶</button>
+                        </div>
+
+                        <!-- Endpoint 8 -->
+                        <div class="endpoint-item status-healthy">
+                            <div class="endpoint-status-dot"></div>
+                            <div class="endpoint-info">
+                                <div class="endpoint-name">Email Service API</div>
+                                <div class="endpoint-url">mail.sendgrid.com/v3/health</div>
+                            </div>
+                            <div class="endpoint-metrics">
+                                <span class="metric metric-success">178ms</span>
+                                <span class="metric">200</span>
+                            </div>
+                            <button class="btn-icon">▶</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Details Panel -->
+                <div class="details-panel">
+                    <div class="section-header">
+                        <h2>Endpoint Details</h2>
+                        <button class="btn-icon">✕</button>
+                    </div>
+
+                    <div class="detail-card">
+                        <div class="detail-header">
+                            <h3>Production API Gateway</h3>
+                            <span class="status-badge failed">Failed</span>
+                        </div>
+
+                        <div class="detail-section">
+                            <label>Endpoint URL</label>
+                            <div class="detail-value code">https://api.production.example.com/health</div>
+                        </div>
+
+                        <div class="detail-section">
+                            <label>Type</label>
+                            <div class="detail-value">REST API</div>
+                        </div>
+
+                        <div class="detail-section">
+                            <label>Current Status</label>
+                            <div class="status-info failed">
+                                <span class="status-icon">✕</span>
+                                <div>
+                                    <div class="status-text">Service Unavailable</div>
+                                    <div class="status-code">HTTP 503</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <label>Performance Metrics</label>
+                            <div class="metrics-grid">
+                                <div class="metric-box">
+                                    <div class="metric-label">Response Time</div>
+                                    <div class="metric-value danger">1,245ms</div>
+                                </div>
+                                <div class="metric-box">
+                                    <div class="metric-label">Last Check</div>
+                                    <div class="metric-value">1m ago</div>
+                                </div>
+                                <div class="metric-box">
+                                    <div class="metric-label">Uptime (24h)</div>
+                                    <div class="metric-value">87.3%</div>
+                                </div>
+                                <div class="metric-box">
+                                    <div class="metric-label">Failures</div>
+                                    <div class="metric-value danger">18</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <label>Recent Activity</label>
+                            <div class="activity-timeline">
+                                <div class="activity-item failed">
+                                    <div class="activity-dot"></div>
+                                    <div class="activity-content">
+                                        <div class="activity-title">Health check failed - 503</div>
+                                        <div class="activity-time">1 minute ago</div>
+                                    </div>
+                                </div>
+                                <div class="activity-item failed">
+                                    <div class="activity-dot"></div>
+                                    <div class="activity-content">
+                                        <div class="activity-title">Health check failed - 503</div>
+                                        <div class="activity-time">6 minutes ago</div>
+                                    </div>
+                                </div>
+                                <div class="activity-item success">
+                                    <div class="activity-dot"></div>
+                                    <div class="activity-content">
+                                        <div class="activity-title">Health check successful</div>
+                                        <div class="activity-time">11 minutes ago</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-actions">
+                            <button class="btn btn-primary">▶ Test Now</button>
+                            <button class="btn btn-secondary">📊 View Logs</button>
+                            <button class="btn btn-secondary">✎ Edit</button>
+                            <button class="btn btn-danger">🗑 Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 App Health Monitor - Mixed Dashboard</p>
+        </div>
+    </footer>
+
+    <script>
+        // Simple interaction demo
+        document.querySelectorAll('.endpoint-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.endpoint-item').forEach(i => i.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Table View - Mock UI</title>
+    <link rel="stylesheet" href="table-view.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <a href="/">Health Monitor</a>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/">Dashboard</a></li>
+                <li><a href="/logs">All Logs</a></li>
+                <li><a href="/endpoints/add">Add Endpoint</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <div class="container">
+            <div class="header-section">
+                <h1>Service Health Monitor</h1>
+                <a href="/endpoints/add" class="btn btn-primary">+ Add Endpoint</a>
+            </div>
+
+            <!-- Dashboard Overview Stats -->
+            <div class="dashboard-stats">
+                <div class="stat-item stat-healthy">
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">Healthy</div>
+                </div>
+                <div class="stat-item stat-failed">
+                    <div class="stat-number">1</div>
+                    <div class="stat-label">Failed</div>
+                </div>
+                <div class="stat-item stat-total">
+                    <div class="stat-number">4</div>
+                    <div class="stat-label">Total</div>
+                </div>
+                <div class="stat-item stat-response">
+                    <div class="stat-number">245ms</div>
+                    <div class="stat-label">Avg Response</div>
+                </div>
+            </div>
+
+            <!-- Table View -->
+            <div class="endpoints-table-container">
+                <table class="endpoints-table">
+                    <thead>
+                        <tr>
+                            <th width="30">●</th>
+                            <th>Service Name</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Response Time</th>
+                            <th>Last Check</th>
+                            <th width="120">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Row 1: Healthy REST API -->
+                        <tr class="endpoint-row">
+                            <td>
+                                <span class="status-dot success"></span>
+                            </td>
+                            <td>
+                                <div class="endpoint-name">Open-Meteo Weather API (Toronto)</div>
+                                <div class="endpoint-url-small">https://api.open-meteo.com/v1/forecast...</div>
+                            </td>
+                            <td>
+                                <span class="badge badge-rest">REST</span>
+                            </td>
+                            <td>
+                                <span class="status-text status-success">200</span>
+                            </td>
+                            <td>
+                                <span class="response-time fast">156ms</span>
+                            </td>
+                            <td class="timestamp">11:23:45</td>
+                            <td>
+                                <div class="table-actions">
+                                    <button class="btn-icon" title="Check Now">▶</button>
+                                    <button class="btn-icon btn-expand" title="Details" onclick="toggleRow(1)">▼</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="endpoint-details" id="details-1" style="display: none;">
+                            <td colspan="7">
+                                <div class="details-content">
+                                    <div class="details-grid">
+                                        <div class="detail-section">
+                                            <h4>Endpoint Details</h4>
+                                            <p><strong>URL:</strong> <a href="#">https://api.open-meteo.com/v1/forecast?latitude=43.7&longitude=-79.4&current_weather=true</a></p>
+                                            <p><strong>Check Interval:</strong> 180s</p>
+                                            <p><strong>Timeout:</strong> 15s</p>
+                                            <p><strong>Status:</strong> <span class="status-enabled">Enabled</span></p>
+                                        </div>
+                                        <div class="detail-section">
+                                            <h4>Latest Check</h4>
+                                            <p><strong>Status:</strong> Success</p>
+                                            <p><strong>Status Code:</strong> 200</p>
+                                            <p><strong>Response Time:</strong> 156ms</p>
+                                        </div>
+                                        <div class="detail-section">
+                                            <h4>Actions</h4>
+                                            <div class="detail-actions">
+                                                <button class="btn btn-sm btn-secondary">Edit</button>
+                                                <button class="btn btn-sm btn-primary">View Logs</button>
+                                                <button class="btn btn-sm btn-danger">Delete</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Row 2: Healthy SOAP -->
+                        <tr class="endpoint-row">
+                            <td>
+                                <span class="status-dot success"></span>
+                            </td>
+                            <td>
+                                <div class="endpoint-name">CountryInfo - CapitalCity (US)</div>
+                                <div class="endpoint-url-small">http://webservices.oorsprong.org/websamples...</div>
+                            </td>
+                            <td>
+                                <span class="badge badge-soap">SOAP</span>
+                            </td>
+                            <td>
+                                <span class="status-text status-success">200</span>
+                            </td>
+                            <td>
+                                <span class="response-time medium">596ms</span>
+                            </td>
+                            <td class="timestamp">11:23:40</td>
+                            <td>
+                                <div class="table-actions">
+                                    <button class="btn-icon" title="Check Now">▶</button>
+                                    <button class="btn-icon btn-expand" title="Details" onclick="toggleRow(2)">▼</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="endpoint-details" id="details-2" style="display: none;">
+                            <td colspan="7">
+                                <div class="details-content">
+                                    <div class="details-grid">
+                                        <div class="detail-section">
+                                            <h4>Endpoint Details</h4>
+                                            <p><strong>URL:</strong> <a href="#">http://webservices.oorsprong.org/websamples.countryinfo/CountryInfoService.wso</a></p>
+                                            <p><strong>Check Interval:</strong> 300s</p>
+                                            <p><strong>Timeout:</strong> 30s</p>
+                                            <p><strong>Status:</strong> <span class="status-enabled">Enabled</span></p>
+                                        </div>
+                                        <div class="detail-section">
+                                            <h4>Latest Check</h4>
+                                            <p><strong>Status:</strong> Success</p>
+                                            <p><strong>Response Time:</strong> 596ms</p>
+                                        </div>
+                                        <div class="detail-section">
+                                            <h4>Actions</h4>
+                                            <div class="detail-actions">
+                                                <button class="btn btn-sm btn-secondary">Edit</button>
+                                                <button class="btn btn-sm btn-primary">View Logs</button>
+                                                <button class="btn btn-sm btn-danger">Delete</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Row 3: Failed Service -->
+                        <tr class="endpoint-row">
+                            <td>
+                                <span class="status-dot failure"></span>
+                            </td>
+                            <td>
+                                <div class="endpoint-name">Production API Gateway</div>
+                                <div class="endpoint-url-small">https://api.production.example.com/health</div>
+                            </td>
+                            <td>
+                                <span class="badge badge-rest">REST</span>
+                            </td>
+                            <td>
+                                <span class="status-text status-failure">503</span>
+                            </td>
+                            <td>
+                                <span class="response-time slow">1245ms</span>
+                            </td>
+                            <td class="timestamp">11:22:15</td>
+                            <td>
+                                <div class="table-actions">
+                                    <button class="btn-icon" title="Check Now">▶</button>
+                                    <button class="btn-icon btn-expand" title="Details" onclick="toggleRow(3)">▼</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="endpoint-details" id="details-3" style="display: none;">
+                            <td colspan="7">
+                                <div class="details-content">
+                                    <div class="details-grid">
+                                        <div class="detail-section">
+                                            <h4>Endpoint Details</h4>
+                                            <p><strong>URL:</strong> <a href="#">https://api.production.example.com/health</a></p>
+                                            <p><strong>Check Interval:</strong> 60s</p>
+                                            <p><strong>Timeout:</strong> 10s</p>
+                                            <p><strong>Status:</strong> <span class="status-enabled">Enabled</span></p>
+                                        </div>
+                                        <div class="detail-section">
+                                            <h4>Latest Check</h4>
+                                            <p><strong>Status:</strong> Failure</p>
+                                            <p><strong>Error:</strong> Service Unavailable - 503</p>
+                                        </div>
+                                        <div class="detail-section">
+                                            <h4>Actions</h4>
+                                            <div class="detail-actions">
+                                                <button class="btn btn-sm btn-secondary">Edit</button>
+                                                <button class="btn btn-sm btn-primary">View Logs</button>
+                                                <button class="btn btn-sm btn-danger">Delete</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Row 4: Timeout -->
+                        <tr class="endpoint-row">
+                            <td>
+                                <span class="status-dot timeout"></span>
+                            </td>
+                            <td>
+                                <div class="endpoint-name">Legacy SOAP Service</div>
+                                <div class="endpoint-url-small">http://legacy.internal.corp/service.asmx</div>
+                            </td>
+                            <td>
+                                <span class="badge badge-soap">SOAP</span>
+                            </td>
+                            <td>
+                                <span class="status-text status-timeout">Timeout</span>
+                            </td>
+                            <td>
+                                —
+                            </td>
+                            <td class="timestamp">11:20:00</td>
+                            <td>
+                                <div class="table-actions">
+                                    <button class="btn-icon" title="Check Now">▶</button>
+                                    <button class="btn-icon btn-expand" title="Details" onclick="toggleRow(4)">▼</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="endpoint-details" id="details-4" style="display: none;">
+                            <td colspan="7">
+                                <div class="details-content">
+                                    <div class="details-grid">
+                                        <div class="detail-section">
+                                            <h4>Endpoint Details</h4>
+                                            <p><strong>URL:</strong> <a href="#">http://legacy.internal.corp/service.asmx</a></p>
+                                            <p><strong>Check Interval:</strong> 120s</p>
+                                            <p><strong>Timeout:</strong> 30s</p>
+                                            <p><strong>Status:</strong> <span class="status-enabled">Enabled</span></p>
+                                        </div>
+                                        <div class="detail-section">
+                                            <h4>Latest Check</h4>
+                                            <p><strong>Status:</strong> Timeout</p>
+                                            <p><strong>Error:</strong> Request timeout after 30 seconds</p>
+                                        </div>
+                                        <div class="detail-section">
+                                            <h4>Actions</h4>
+                                            <div class="detail-actions">
+                                                <button class="btn btn-sm btn-secondary">Edit</button>
+                                                <button class="btn btn-sm btn-primary">View Logs</button>
+                                                <button class="btn btn-sm btn-danger">Delete</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 App Health Monitor</p>
+        </div>
+    </footer>
+
+    <script>
+        function toggleRow(endpointId) {
+            const detailsRow = document.getElementById('details-' + endpointId);
+            const button = event.target;
+            
+            if (detailsRow.style.display === 'none') {
+                detailsRow.style.display = 'table-row';
+                button.textContent = '▲';
+            } else {
+                detailsRow.style.display = 'none';
+                button.textContent = '▼';
+            }
+        }
+    </script>
+</body>
+</html>
