@@ -18,6 +18,7 @@ A comprehensive web application for monitoring REST and WCF endpoints with real-
 - 🐳 **Docker Support**: Containerized deployment with Docker and Docker Compose
 - 🔄 **CI/CD Integration**: GitHub Actions workflow for automated testing and health checks
 - 📈 **Statistics**: Uptime percentage, average response times, and success rates
+- 🔐 **OAuth 2.0 Support**: Monitor OAuth-protected APIs with automatic token management
 
 ## Quick Start
 
@@ -306,6 +307,38 @@ The workflow runs automatically every hour to check all enabled endpoints and ge
 3. **Authentication**: Consider adding authentication for production deployments
 4. **Rate Limiting**: Implement rate limiting to prevent abuse
 5. **Network Access**: Ensure the application has appropriate network access to monitored endpoints
+6. **OAuth Secrets**: Store OAuth client secrets securely using environment variables or secret management services
+7. **Token Security**: OAuth tokens are stored in the database - ensure proper database security and consider encryption at rest
+
+## OAuth 2.0 Authentication
+
+The application supports OAuth 2.0 authentication for monitoring protected APIs. Supported flows include:
+
+- **Client Credentials Flow**: For service-to-service authentication
+- **Authorization Code Flow**: For user-delegated access (with refresh token support)
+- **Azure AD**: Built-in support for Azure Active Directory
+
+For detailed OAuth configuration instructions, see [OAUTH.md](OAUTH.md).
+
+### Quick OAuth Example
+
+```python
+# Configure an endpoint with OAuth 2.0 client credentials
+Name: Azure Protected API
+URL: https://api.example.com/health
+Auth Type: oauth
+OAuth Flow: client_credentials
+Client ID: your-client-id
+Client Secret: your-client-secret
+Token URL: https://login.microsoftonline.com/tenant-id/oauth2/v2.0/token
+Scope: api://your-api/.default
+```
+
+The health monitor will automatically:
+- Request access tokens when needed
+- Cache tokens for reuse
+- Refresh tokens before expiration
+- Include tokens in health check requests
 
 ## Troubleshooting
 
@@ -355,6 +388,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Flask - Web framework
 - SQLAlchemy - Database ORM
 - APScheduler - Background job scheduling
+- Authlib - OAuth 2.0 client library
 - Bootstrap inspiration for UI design
 
 ## Support
