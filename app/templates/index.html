@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - App Health Monitor{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="header-section">
+        <h1>Endpoint Dashboard</h1>
+        <a href="{{ url_for('main.add_endpoint') }}" class="btn btn-primary">+ Add Endpoint</a>
+    </div>
+
+    {% if endpoint_statuses %}
+        <div class="endpoints-grid">
+            {% for item in endpoint_statuses %}
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <h3>{{ item.endpoint.name }}</h3>
+                        <span class="badge badge-{{ item.endpoint.endpoint_type.lower() }}">
+                            {{ item.endpoint.endpoint_type }}
+                        </span>
+                    </div>
+                    
+                    <div class="endpoint-url">
+                        <a href="{{ item.endpoint.url }}" target="_blank" rel="noopener">
+                            {{ item.endpoint.url }}
+                        </a>
+                    </div>
+
+                    {% if item.latest_check %}
+                        <div class="status-section">
+                            <div class="status-badge status-{{ item.latest_check.status }}">
+                                {% if item.latest_check.status == 'success' %}
+                                    ✓ Healthy
+                                {% elif item.latest_check.status == 'failure' %}
+                                    ✗ Failed
+                                {% elif item.latest_check.status == 'timeout' %}
+                                    ⏱ Timeout
+                                {% else %}
+                                    ? Unknown
+                                {% endif %}
+                            </div>
+                            
+                            <div class="metrics">
+                                {% if item.latest_check.status_code %}
+                                    <div class="metric">
+                                        <span class="metric-label">Status Code:</span>
+                                        <span class="metric-value">{{ item.latest_check.status_code }}</span>
+                                    </div>
+                                {% endif %}
+                                
+                                {% if item.latest_check.response_time %}
+                                    <div class="metric">
+                                        <span class="metric-label">Response Time:</span>
+                                        <span class="metric-value">{{ "%.2f"|format(item.latest_check.response_time) }} ms</span>
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="metric">
+                                    <span class="metric-label">Last Checked:</span>
+                                    <span class="metric-value">{{ item.latest_check.checked_at.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                                </div>
+                            </div>
+
+                            {% if item.latest_check.error_message %}
+                                <div class="error-message">
+                                    {{ item.latest_check.error_message }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="status-section">
+                            <div class="status-badge status-unknown">
+                                Not yet checked
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="endpoint-actions">
+                        <form action="{{ url_for('main.check_endpoint_now', endpoint_id=item.endpoint.id) }}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-secondary">Check Now</button>
+                        </form>
+                        <a href="{{ url_for('main.endpoint_logs', endpoint_id=item.endpoint.id) }}" class="btn btn-sm btn-secondary">View Logs</a>
+                        <a href="{{ url_for('main.edit_endpoint', endpoint_id=item.endpoint.id) }}" class="btn btn-sm btn-secondary">Edit</a>
+                        <form action="{{ url_for('main.delete_endpoint', endpoint_id=item.endpoint.id) }}" method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this endpoint?');">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </div>
+
+                    <div class="endpoint-meta">
+                        <span class="enabled-status">
+                            {% if item.endpoint.enabled %}
+                                <span class="status-indicator status-enabled">●</span> Enabled
+                            {% else %}
+                                <span class="status-indicator status-disabled">●</span> Disabled
+                            {% endif %}
+                        </span>
+                        <span>Check interval: {{ item.endpoint.check_interval }}s</span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <h2>No endpoints configured</h2>
+            <p>Get started by adding your first endpoint to monitor.</p>
+            <a href="{{ url_for('main.add_endpoint') }}" class="btn btn-primary">Add Your First Endpoint</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
