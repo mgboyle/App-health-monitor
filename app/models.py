@@ -14,10 +14,15 @@ class Endpoint(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
     url = db.Column(db.String(500), nullable=False)
-    endpoint_type = db.Column(db.String(50), nullable=False, default='REST')  # REST or WCF
+    endpoint_type = db.Column(db.String(50), nullable=False, default='REST')  # REST, SOAP, or GraphQL
     check_interval = db.Column(db.Integer, default=60)  # seconds
     timeout = db.Column(db.Integer, default=30)  # seconds
     enabled = db.Column(db.Boolean, default=True)
+    
+    # SOAP-specific fields
+    soap_action = db.Column(db.String(500), nullable=True)  # SOAP action/method name
+    soap_payload = db.Column(db.Text, nullable=True)  # Sample SOAP request payload
+    
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -34,6 +39,8 @@ class Endpoint(db.Model):
             'check_interval': self.check_interval,
             'timeout': self.timeout,
             'enabled': self.enabled,
+            'soap_action': self.soap_action,
+            'soap_payload': self.soap_payload,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }

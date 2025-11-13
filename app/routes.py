@@ -4,6 +4,7 @@ Web routes for the health monitor application
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify, flash
 from app.models import db, Endpoint, HealthCheck
 from app.health_checker import HealthChecker
+from app.soap_utils import WSDLParser
 from datetime import datetime, timedelta
 from sqlalchemy import func
 
@@ -38,6 +39,10 @@ def add_endpoint():
         timeout = int(request.form.get('timeout', 30))
         enabled = request.form.get('enabled') == 'on'
         
+        # SOAP-specific fields
+        soap_action = request.form.get('soap_action', '').strip() or None
+        soap_payload = request.form.get('soap_payload', '').strip() or None
+        
         if not name or not url:
             flash('Name and URL are required', 'error')
             return render_template('add_endpoint.html')
@@ -48,7 +53,9 @@ def add_endpoint():
             endpoint_type=endpoint_type,
             check_interval=check_interval,
             timeout=timeout,
-            enabled=enabled
+            enabled=enabled,
+            soap_action=soap_action,
+            soap_payload=soap_payload
         )
         
         db.session.add(endpoint)
@@ -72,6 +79,11 @@ def edit_endpoint(endpoint_id):
         endpoint.check_interval = int(request.form.get('check_interval', 60))
         endpoint.timeout = int(request.form.get('timeout', 30))
         endpoint.enabled = request.form.get('enabled') == 'on'
+        
+        # SOAP-specific fields
+        endpoint.soap_action = request.form.get('soap_action', '').strip() or None
+        endpoint.soap_payload = request.form.get('soap_payload', '').strip() or None
+        
         endpoint.updated_at = datetime.utcnow()
         
         db.session.commit()
@@ -245,3 +257,47 @@ def api_endpoint_checks(endpoint_id):
         'endpoint': endpoint.to_dict(),
         'checks': [check.to_dict() for check in checks]
     })
+
+
+@bp.route('/api/wsdl/operations', methods=['POST'])
+def fetch_wsdl_operations():
+    """API endpoint to fetch WSDL operations from a URL"""
+    wsdl_url = request.json.get('wsdl_url')
+    
+    if not wsdl_url:
+        return jsonify({'error': 'WSDL URL is required'}), 400
+    
+    # Fetch WSDL content
+    wsdl_content = WSDLParser.fetch_wsdl(wsdl_url, timeout=30)
+    
+    if not wsdl_content:
+        return jsonify({'error': 'Failed to fetch WSDL from the provided URL'}), 400
+    
+    # Parse operations
+    operations = WSDLParser.parse_operations(wsdl_content)
+    
+    if not operations:
+        return jsonify({'error': 'No operations found in WSDL'}), 404
+    
+    return jsonify({'operations': operations})
+
+
+@bp.route('/api/wsdl/sample-payload', methods=['POST'])
+def generate_sample_payload():
+    """API endpoint to generate sample SOAP payload for an operation"""
+    wsdl_url = request.json.get('wsdl_url')
+    operation_name = request.json.get('operation_name')
+    
+    if not wsdl_url or not operation_name:
+        return jsonify({'error': 'WSDL URL and operation name are required'}), 400
+    
+    # Fetch WSDL content
+    wsdl_content = WSDLParser.fetch_wsdl(wsdl_url, timeout=30)
+    
+    if not wsdl_content:
+        return jsonify({'error': 'Failed to fetch WSDL from the provided URL'}), 400
+    
+    # Generate sample payload
+    sample_payload = WSDLParser.generate_sample_payload(wsdl_content, operation_name)
+    
+    return jsonify({'payload': sample_payload})

@@ -25,11 +25,32 @@ class HealthChecker:
         
         try:
             start_time = time.time()
-            response = requests.get(
-                endpoint.url,
-                timeout=endpoint.timeout,
-                allow_redirects=True
-            )
+            
+            # Handle SOAP endpoints differently
+            if endpoint.endpoint_type == 'SOAP' and endpoint.soap_payload:
+                headers = {
+                    'Content-Type': 'text/xml; charset=utf-8'
+                }
+                
+                # Add SOAPAction header if specified
+                if endpoint.soap_action:
+                    headers['SOAPAction'] = endpoint.soap_action
+                
+                response = requests.post(
+                    endpoint.url,
+                    data=endpoint.soap_payload,
+                    headers=headers,
+                    timeout=endpoint.timeout,
+                    allow_redirects=True
+                )
+            else:
+                # Default to GET request for REST and other types
+                response = requests.get(
+                    endpoint.url,
+                    timeout=endpoint.timeout,
+                    allow_redirects=True
+                )
+            
             response_time = (time.time() - start_time) * 1000  # Convert to milliseconds
             
             health_check.status_code = response.status_code

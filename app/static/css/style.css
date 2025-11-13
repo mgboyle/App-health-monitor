@@ -281,12 +281,17 @@ main {
 
 /* Endpoint Actions */
 .endpoint-actions {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.5rem;
-    flex-wrap: wrap;
     margin-top: 1rem;
     padding-top: 1rem;
     border-top: 1px solid #e0e0e0;
+}
+
+.endpoint-actions .btn {
+    width: 100%;
+    text-align: center;
 }
 
 .endpoint-meta {
@@ -343,7 +348,8 @@ main {
 .form-group input[type="text"],
 .form-group input[type="url"],
 .form-group input[type="number"],
-.form-group select {
+.form-group select,
+.form-group textarea {
     width: 100%;
     padding: 0.75rem;
     border: 1px solid #ddd;
@@ -353,7 +359,8 @@ main {
 }
 
 .form-group input:focus,
-.form-group select:focus {
+.form-group select:focus,
+.form-group textarea:focus {
     outline: none;
     border-color: #3498db;
 }
@@ -536,10 +543,7 @@ main {
     }
 
     .endpoint-actions {
-        flex-direction: column;
+        grid-template-columns: 1fr;
     }
-
-    .endpoint-actions .btn {
-        width: 100%;
     }
 }

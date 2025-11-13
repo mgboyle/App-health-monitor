@@ -6,7 +6,7 @@
 <div class="form-container">
     <h1>Edit Endpoint</h1>
     
-    <form method="post" class="endpoint-form">
+    <form method="post" class="endpoint-form" id="endpointForm">
         <div class="form-group">
             <label for="name">Endpoint Name *</label>
             <input type="text" id="name" name="name" required value="{{ endpoint.name }}">
@@ -15,16 +15,43 @@
         <div class="form-group">
             <label for="url">URL *</label>
             <input type="url" id="url" name="url" required value="{{ endpoint.url }}">
+            <small style="color: #666; display: block; margin-top: 0.25rem;">For SOAP: use the WSDL URL (e.g., https://api.example.com/service?wsdl)</small>
         </div>
 
         <div class="form-group">
             <label for="endpoint_type">Endpoint Type</label>
-            <select id="endpoint_type" name="endpoint_type">
+            <select id="endpoint_type" name="endpoint_type" onchange="toggleSoapFields()">
                 <option value="REST" {% if endpoint.endpoint_type == 'REST' %}selected{% endif %}>REST</option>
-                <option value="WCF" {% if endpoint.endpoint_type == 'WCF' %}selected{% endif %}>WCF</option>
-                <option value="SOAP" {% if endpoint.endpoint_type == 'SOAP' %}selected{% endif %}>SOAP</option>
+                <option value="SOAP" {% if endpoint.endpoint_type in ['SOAP', 'WCF'] %}selected{% endif %}>SOAP/WCF</option>
                 <option value="GraphQL" {% if endpoint.endpoint_type == 'GraphQL' %}selected{% endif %}>GraphQL</option>
             </select>
+        </div>
+
+        <div id="soapFields" style="display: none;">
+            <div class="form-group">
+                <label for="wsdl_url_input">WSDL URL (for auto-loading methods)</label>
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="text" id="wsdl_url_input" placeholder="https://api.example.com/service?wsdl" value="{{ endpoint.url }}" style="flex: 1;">
+                    <button type="button" class="btn btn-secondary" onclick="loadWsdlOperations()">Load Methods</button>
+                </div>
+            </div>
+
+            <div class="form-group" id="operationSelectGroup" style="display: none;">
+                <label for="operation_select">Select SOAP Method</label>
+                <select id="operation_select" onchange="loadSamplePayload()">
+                    <option value="">-- Select a method --</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="soap_action">SOAP Action/Method Name</label>
+                <input type="text" id="soap_action" name="soap_action" placeholder="e.g., GetData or http://tempuri.org/IService/GetData" value="{{ endpoint.soap_action or '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="soap_payload">SOAP Request Payload (XML)</label>
+                <textarea id="soap_payload" name="soap_payload" rows="10" placeholder="<?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?>&#10;<soap:Envelope xmlns:soap=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;>&#10;  <soap:Body>&#10;    <MethodName xmlns=&quot;http://tempuri.org/&quot;>&#10;      <!-- parameters -->&#10;    </MethodName>&#10;  </soap:Body>&#10;</soap:Envelope>" style="font-family: 'Courier New', monospace; font-size: 0.9rem;">{{ endpoint.soap_payload or '' }}</textarea>
+            </div>
         </div>
 
         <div class="form-row">
@@ -52,4 +79,103 @@
         </div>
     </form>
 </div>
+
+<script>
+function toggleSoapFields() {
+    const endpointType = document.getElementById('endpoint_type').value;
+    const soapFields = document.getElementById('soapFields');
+    soapFields.style.display = endpointType === 'SOAP' ? 'block' : 'none';
+}
+
+async function loadWsdlOperations() {
+    const wsdlUrl = document.getElementById('wsdl_url_input').value.trim();
+    if (!wsdlUrl) {
+        alert('Please enter a WSDL URL');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/wsdl/operations', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ wsdl_url: wsdlUrl })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            alert('Error loading WSDL: ' + (error.error || 'Unknown error'));
+            return;
+        }
+
+        const data = await response.json();
+        const operations = data.operations;
+
+        if (operations.length === 0) {
+            alert('No operations found in the WSDL');
+            return;
+        }
+
+        // Populate the operation select
+        const operationSelect = document.getElementById('operation_select');
+        operationSelect.innerHTML = '<option value="">-- Select a method --</option>';
+        
+        operations.forEach(op => {
+            const option = document.createElement('option');
+            option.value = op.name;
+            option.textContent = op.name;
+            option.dataset.soapAction = op.soap_action || '';
+            operationSelect.appendChild(option);
+        });
+
+        document.getElementById('operationSelectGroup').style.display = 'block';
+    } catch (error) {
+        alert('Error loading WSDL operations: ' + error.message);
+    }
+}
+
+async function loadSamplePayload() {
+    const operationSelect = document.getElementById('operation_select');
+    const selectedOption = operationSelect.options[operationSelect.selectedIndex];
+    const operationName = selectedOption.value;
+    
+    if (!operationName) return;
+
+    // Set SOAP action
+    const soapAction = selectedOption.dataset.soapAction || operationName;
+    document.getElementById('soap_action').value = soapAction;
+
+    // Load sample payload
+    const wsdlUrl = document.getElementById('wsdl_url_input').value.trim();
+    
+    try {
+        const response = await fetch('/api/wsdl/sample-payload', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                wsdl_url: wsdlUrl,
+                operation_name: operationName 
+            })
+        });
+
+        if (!response.ok) {
+            console.error('Error loading sample payload');
+            return;
+        }
+
+        const data = await response.json();
+        document.getElementById('soap_payload').value = data.payload;
+    } catch (error) {
+        console.error('Error loading sample payload:', error);
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    toggleSoapFields();
+});
+</script>
 {% endblock %}
