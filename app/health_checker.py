@@ -106,9 +106,10 @@ class HealthChecker:
             endpoint: Endpoint model instance
             
         Returns:
-            dict: Authentication configuration for requests
+            tuple: (auth_config dict, needs_save bool) - auth_config for requests, needs_save if endpoint was updated
         """
         auth_config = {}
+        needs_save = False
         
         if endpoint.auth_type == 'basic' and endpoint.auth_username:
             from requests.auth import HTTPBasicAuth
@@ -120,8 +121,22 @@ class HealthChecker:
             # Kerberos uses default system credentials (current user's ticket)
             # No username/password needed
             auth_config['auth'] = HTTPKerberosAuth(mutual_authentication=OPTIONAL)
+        elif endpoint.auth_type == 'oauth' and endpoint.oauth_flow:
+            from app.oauth_utils import OAuth2Manager
+            try:
+                # Get valid token, refreshing if necessary
+                access_token, token_updated = OAuth2Manager.get_valid_token(endpoint)
+                needs_save = token_updated
+                
+                # Add Bearer token to headers
+                if 'headers' not in auth_config:
+                    auth_config['headers'] = {}
+                auth_config['headers']['Authorization'] = f'Bearer {access_token}'
+            except Exception as e:
+                # If OAuth token retrieval fails, raise exception to be caught by caller
+                raise Exception(f"OAuth authentication failed: {str(e)}")
         
-        return auth_config
+        return auth_config, needs_save
     
     @staticmethod
     def check_endpoint(endpoint):
@@ -132,15 +147,17 @@ class HealthChecker:
             endpoint: Endpoint model instance
             
         Returns:
-            HealthCheck model instance
+            tuple: (HealthCheck model instance, needs_save bool) - needs_save indicates if endpoint needs to be saved to DB
         """
         health_check = HealthCheck(endpoint_id=endpoint.id)
+        needs_save = False
         
         try:
             start_time = time.time()
             
             # Get authentication configuration
-            auth_config = HealthChecker.get_auth_config(endpoint)
+            auth_config, token_updated = HealthChecker.get_auth_config(endpoint)
+            needs_save = token_updated
             
             # Handle SOAP endpoints differently
             if endpoint.endpoint_type == 'SOAP' and endpoint.soap_payload:
@@ -151,6 +168,10 @@ class HealthChecker:
                 # Add SOAPAction header if specified
                 if endpoint.soap_action:
                     headers['SOAPAction'] = endpoint.soap_action
+                
+                # Merge OAuth headers if present
+                if 'headers' in auth_config:
+                    headers.update(auth_config.pop('headers'))
                 
                 response = requests.post(
                     endpoint.url,
@@ -202,7 +223,7 @@ class HealthChecker:
             health_check.error_message = f'Error: {str(e)[:200]}'
         
         health_check.checked_at = datetime.utcnow()
-        return health_check
+        return health_check, needs_save
     
     @staticmethod
     def check_all_endpoints(app):
@@ -216,8 +237,12 @@ class HealthChecker:
             endpoints = Endpoint.query.filter_by(enabled=True).all()
             
             for endpoint in endpoints:
-                health_check = HealthChecker.check_endpoint(endpoint)
+                health_check, needs_save = HealthChecker.check_endpoint(endpoint)
                 db.session.add(health_check)
+                
+                # Save endpoint if OAuth token was updated
+                if needs_save:
+                    db.session.add(endpoint)
             
             # Commit all health checks at once
             try:

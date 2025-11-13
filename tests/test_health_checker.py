@@ -28,12 +28,13 @@ class TestHealthChecker:
                 mock_response.status_code = 200
                 mock_get.return_value = mock_response
                 
-                health_check = HealthChecker.check_endpoint(endpoint)
+                health_check, needs_save = HealthChecker.check_endpoint(endpoint)
                 
                 assert health_check.status == 'success'
                 assert health_check.status_code == 200
                 assert health_check.response_time is not None
                 assert health_check.response_time >= 0
+                assert needs_save is False  # No OAuth token update
     
     def test_check_endpoint_failure(self, app, db):
         """Test checking an endpoint that returns failure"""
@@ -52,7 +53,7 @@ class TestHealthChecker:
                 mock_response.status_code = 500
                 mock_get.return_value = mock_response
                 
-                health_check = HealthChecker.check_endpoint(endpoint)
+                health_check, needs_save = HealthChecker.check_endpoint(endpoint)
                 
                 assert health_check.status == 'failure'
                 assert health_check.status_code == 500
@@ -73,7 +74,7 @@ class TestHealthChecker:
                 # Mock a timeout
                 mock_get.side_effect = requests.exceptions.Timeout()
                 
-                health_check = HealthChecker.check_endpoint(endpoint)
+                health_check, needs_save = HealthChecker.check_endpoint(endpoint)
                 
                 assert health_check.status == 'timeout'
                 assert 'timeout' in health_check.error_message.lower()
@@ -93,7 +94,7 @@ class TestHealthChecker:
                 # Mock a connection error
                 mock_get.side_effect = requests.exceptions.ConnectionError('Connection failed')
                 
-                health_check = HealthChecker.check_endpoint(endpoint)
+                health_check, needs_save = HealthChecker.check_endpoint(endpoint)
                 
                 assert health_check.status == 'failure'
                 assert health_check.error_message is not None
