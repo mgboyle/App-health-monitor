@@ -182,8 +182,13 @@ def check_endpoint_now(endpoint_id):
     """Manually trigger a health check for an endpoint"""
     endpoint = Endpoint.query.get_or_404(endpoint_id)
     
-    health_check = HealthChecker.check_endpoint(endpoint)
+    health_check, needs_save = HealthChecker.check_endpoint(endpoint)
     db.session.add(health_check)
+    
+    # Save endpoint if OAuth token was updated
+    if needs_save:
+        db.session.add(endpoint)
+    
     db.session.commit()
     
     flash(f'Health check completed for "{endpoint.name}"', 'success')

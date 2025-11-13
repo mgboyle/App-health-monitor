@@ -33,6 +33,17 @@ class Endpoint(db.Model):
     auth_username = db.Column(db.String(200), nullable=True)  # For Basic auth
     auth_password = db.Column(db.String(200), nullable=True)  # For Basic auth (should be encrypted in production)
     
+    # OAuth 2.0 fields
+    oauth_flow = db.Column(db.String(50), nullable=True)  # client_credentials, authorization_code
+    oauth_client_id = db.Column(db.String(500), nullable=True)  # OAuth client ID
+    oauth_client_secret = db.Column(db.String(500), nullable=True)  # OAuth client secret (should be encrypted in production)
+    oauth_token_url = db.Column(db.String(500), nullable=True)  # OAuth token endpoint
+    oauth_authorization_url = db.Column(db.String(500), nullable=True)  # OAuth authorization endpoint (for authorization_code flow)
+    oauth_scope = db.Column(db.String(500), nullable=True)  # OAuth scopes (space-separated)
+    oauth_access_token = db.Column(db.Text, nullable=True)  # Cached access token
+    oauth_refresh_token = db.Column(db.Text, nullable=True)  # Refresh token (for authorization_code flow)
+    oauth_token_expires_at = db.Column(db.DateTime, nullable=True)  # Token expiration timestamp
+    
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -56,6 +67,8 @@ class Endpoint(db.Model):
             'expected_content': self.expected_content,
             'auth_type': self.auth_type,
             'auth_username': self.auth_username,
+            'oauth_flow': self.oauth_flow,
+            'oauth_scope': self.oauth_scope,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
