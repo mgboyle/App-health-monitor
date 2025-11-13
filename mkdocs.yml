@@ -76,10 +76,10 @@ nav:
       - Security Hardening: deployment/security.md
       - Backup & Recovery: deployment/backup.md
   - Roadmap: roadmap.md
+  - SOAP Testing Guide: testing-guide.md
 
 plugins:
   - search
-  - same-dir
 
 extra:
   social:
