@@ -14,6 +14,11 @@ class Config:
     DEFAULT_CHECK_INTERVAL = int(os.environ.get('DEFAULT_CHECK_INTERVAL', '60'))
     DEFAULT_TIMEOUT = int(os.environ.get('DEFAULT_TIMEOUT', '30'))
     MAX_HEALTH_CHECK_HISTORY = int(os.environ.get('MAX_HEALTH_CHECK_HISTORY', '1000'))
+    
+    # Azure Key Vault settings (for mTLS certificates in production)
+    AZURE_KEYVAULT_URL = os.environ.get('AZURE_KEYVAULT_URL', '')  # e.g., https://myvault.vault.azure.net/
+    # Authentication for Key Vault uses Azure Managed Identity or DefaultAzureCredential
+    # No explicit credentials needed when running in AKS with managed identity
 
 
 class DevelopmentConfig(Config):

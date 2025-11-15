@@ -18,6 +18,8 @@ A comprehensive web application for monitoring REST and WCF endpoints with real-
 - 🐳 **Docker Support**: Containerized deployment with Docker and Docker Compose
 - 🔄 **CI/CD Integration**: GitHub Actions workflow for automated testing and health checks
 - 📈 **Statistics**: Uptime percentage, average response times, and success rates
+- 🔐 **Authentication Support**: Basic Auth, Kerberos, and mutual TLS (mTLS) authentication
+- ☁️ **Azure Integration**: Azure Key Vault support for secure certificate management in production
 
 ## Quick Start
 
@@ -67,6 +69,21 @@ nano .env
 - `DEFAULT_CHECK_INTERVAL`: Default interval for health checks in seconds (default: 60)
 - `DEFAULT_TIMEOUT`: Default timeout for requests in seconds (default: 30)
 - `PORT`: Application port (default: 5000)
+- `AZURE_KEYVAULT_URL`: Azure Key Vault URL for mTLS certificates (e.g., `https://myvault.vault.azure.net/`)
+
+### Azure Key Vault Setup (Optional)
+
+For production deployments using mTLS authentication with Azure Key Vault:
+
+1. **Create an Azure Key Vault** and upload your client certificates
+2. **Enable Managed Identity** on your AKS cluster or Azure resource
+3. **Grant Access** to the Key Vault for the Managed Identity
+4. **Set Environment Variable**: `AZURE_KEYVAULT_URL=https://your-vault.vault.azure.net/`
+
+The application uses `DefaultAzureCredential` which automatically handles authentication via:
+- Managed Identity (recommended for production/AKS)
+- Azure CLI (`az login` for local development)
+- Environment variables (service principal)
 
 ## Usage
 
@@ -299,6 +316,79 @@ The workflow runs automatically every hour to check all enabled endpoints and ge
 }
 ```
 
+## Authentication
+
+The App Health Monitor supports multiple authentication methods for monitoring protected endpoints:
+
+### Basic Authentication
+
+Use for endpoints that require username and password authentication:
+
+1. Set **Authentication Type** to "Basic Authentication"
+2. Enter **Username** and **Password**
+3. Credentials are sent with each health check request
+
+**Security Note**: Passwords are currently stored in plaintext. Use service accounts with limited permissions.
+
+### Kerberos Authentication
+
+Use for Windows-integrated or Kerberos-enabled endpoints:
+
+1. Set **Authentication Type** to "Kerberos"
+2. No credentials needed - uses the system's current Kerberos ticket
+3. Ensure the application is running with appropriate Kerberos credentials
+
+### Mutual TLS (mTLS) Authentication
+
+Use for endpoints that require client certificate authentication:
+
+#### Local Development (File-based)
+
+For testing and local development:
+
+1. Enable **mTLS** checkbox
+2. Set **Certificate Source** to "Local Files"
+3. Provide paths to:
+   - **Certificate File**: PEM-encoded client certificate (e.g., `/certs/client.crt`)
+   - **Private Key File**: PEM-encoded private key (e.g., `/certs/client.key`)
+
+Example:
+```bash
+# Generate self-signed certificate for testing
+openssl req -x509 -newkey rsa:2048 -keyout client-key.pem -out client-cert.pem -days 365 -nodes
+```
+
+#### Production (Azure Key Vault)
+
+For production deployments in AKS:
+
+1. **Upload certificate** to Azure Key Vault:
+   ```bash
+   az keyvault certificate import --vault-name MyKeyVault \
+     --name my-client-cert --file certificate.pfx
+   ```
+
+2. **Configure the application**:
+   - Set environment variable: `AZURE_KEYVAULT_URL=https://myvault.vault.azure.net/`
+   - Ensure Managed Identity has access to Key Vault
+
+3. **Configure endpoint**:
+   - Enable **mTLS** checkbox
+   - Set **Certificate Source** to "Azure Key Vault"
+   - Enter **Key Vault Certificate Name** (e.g., `my-client-cert`)
+
+The application automatically:
+- Retrieves certificates from Key Vault using Managed Identity
+- Handles certificate renewal and rotation
+- Cleans up temporary files securely
+
+**Benefits of Azure Key Vault**:
+- ✅ Centralized certificate management
+- ✅ Automatic credential rotation
+- ✅ No certificates stored in code or config files
+- ✅ Audit logging of certificate access
+- ✅ Integration with Azure RBAC
+
 ## Security Considerations
 
 1. **Change the SECRET_KEY**: Always use a strong, random secret key in production
@@ -306,6 +396,10 @@ The workflow runs automatically every hour to check all enabled endpoints and ge
 3. **Authentication**: Consider adding authentication for production deployments
 4. **Rate Limiting**: Implement rate limiting to prevent abuse
 5. **Network Access**: Ensure the application has appropriate network access to monitored endpoints
+6. **Certificate Security**: 
+   - For mTLS: Use Azure Key Vault in production instead of file-based certificates
+   - Rotate certificates regularly
+   - Use Managed Identity for Key Vault access
 
 ## Troubleshooting
 
